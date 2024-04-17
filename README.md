@@ -1,5 +1,5 @@
 <div align="center">
-	<img src="assets/logo.png" alt="logo" width="800px">
+	<img src="assets/logo.png" alt="logo" width="500px">
 </div>
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/shengyanli1982/lockfree)](https://goreportcard.com/report/github.com/shengyanli1982/lockfree)

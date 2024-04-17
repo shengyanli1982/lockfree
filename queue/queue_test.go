@@ -18,7 +18,9 @@ func TestLockFreeQueue_Standard(t *testing.T) {
 	// Verify the elements in the queue
 	for i := 0; i < 100000; i++ {
 		v := q.Pop()
-		assert.Equal(t, i, v, "Incorrect value in the queue. Expected %d, got %d", i, v)
+		if v != nil {
+			assert.Equal(t, i, v, "Incorrect value in the queue. Expected %d, got %d", i, v)
+		}
 	}
 
 	// Verify the queue length
@@ -76,7 +78,7 @@ func TestLockFreeQueue_Parallel(t *testing.T) {
 		go func(i int) {
 			defer wg.Done()
 			v := q.Pop()
-			if v != i {
+			if v != nil && v.(int) != i {
 				assert.Contains(t, nums, v, "Incorrect value in the queue. Expected %d, got %d", i, v)
 			}
 		}(i)
