@@ -1,7 +1,6 @@
 package shared
 
 import (
-	"math"
 	"unsafe"
 )
 
@@ -11,6 +10,10 @@ type Node struct {
 	// Value 是节点存储的值，类型为 interface{}，可以存储任何类型的值
 	// Value is the Value stored in the node, of type interface{}, which can store any type of Value
 	Value interface{}
+
+	// Index 是节点的索引，类型为 uint64
+	// Index is the index of the node, of type uint64
+	Index uint64
 
 	// Next 是指向下一个节点的指针，类型为 unsafe.Pointer
 	// Next is a pointer to the Next node, of type unsafe.Pointer
@@ -27,24 +30,30 @@ func NewNode(v interface{}) *Node {
 
 // Reset 方法用于重置 Node 结构体的值
 // The Reset method is used to reset the value of the Node struct
-func (n *Node) Reset() {
+func (n *Node) ResetAll() {
 	// 将 value 字段设置为 nil
 	// Set the value field to nil
 	n.Value = nil
+
+	// 将 index 字段设置为 0
+	// Set the index field to 0
+	n.Index = 0
 
 	// 将 next 字段设置为 nil
 	// Set the next field to nil
 	n.Next = nil
 }
 
+func (n *Node) ResetValue() {
+	// 将 value 字段设置为 nil
+	// Set the value field to nil
+	n.Value = nil
+}
+
 // 定义一个空的结构体，没有任何字段
 // Define an empty struct, with no fields
 var EmptyValue = struct{}{}
 
-// 创建一个新的节点，节点的值为 emptyValue
-// Create a new node, the value of the node is emptyValue
-var EmptyNode = NewNode(EmptyValue)
-
 // DefaultRingSize 是环形队列的默认大小
 // DefaultRingSize is the default size of the ring queue
-const DefaultRingSize = uint64(math.MaxUint16)
+const DefaultRingSize = 2048

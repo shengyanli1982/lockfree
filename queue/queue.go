@@ -26,11 +26,15 @@ type LockFreeQueue struct {
 // New 函数用于创建一个新的 LockFreeQueue 结构体实例
 // The New function is used to create a new instance of the LockFreeQueue struct
 func New() *LockFreeQueue {
+	// 创建一个新的 Node 结构体实例
+	// Create a new Node struct instance
+	dummy := shd.NewNode(shd.EmptyValue)
+
 	// 返回一个新的 LockFreeQueue 结构体实例，其中 head 和 tail 都指向 EmptyNode 节点
 	// Returns a new instance of the LockFreeQueue struct, where both head and tail point to the dummy node
 	return &LockFreeQueue{
-		head: unsafe.Pointer(shd.EmptyNode),
-		tail: unsafe.Pointer(shd.EmptyNode),
+		head: unsafe.Pointer(dummy),
+		tail: unsafe.Pointer(dummy),
 	}
 }
 
@@ -98,7 +102,7 @@ func (q *LockFreeQueue) Pop() interface{} {
 
 		// 加载头节点的下一个节点
 		// Load the next node of the head node
-		first := shd.LoadNode(&head.Next)
+		next := shd.LoadNode(&head.Next)
 
 		// 检查头节点是否仍然是队列的头节点
 		// Check if the head node is still the head node of the queue
@@ -108,28 +112,28 @@ func (q *LockFreeQueue) Pop() interface{} {
 			if head == tail {
 				// 如果头节点的下一个节点是 nil，说明队列是空的，返回 nil
 				// If the next node of the head node is nil, it means that the queue is empty, return nil
-				if first == nil {
+				if next == nil {
 					return nil
 				}
 
 				// 如果头节点的下一个节点不是 nil，说明尾节点落后了，尝试将队列的尾节点设置为头节点的下一个节点
 				// If the next node of the head node is not nil, it means that the tail node is lagging behind, try to set the tail node of the queue to the next node of the head node
-				shd.CompareAndSwapNode(&q.tail, tail, first)
+				shd.CompareAndSwapNode(&q.tail, tail, next)
 			} else {
 				// 并返回头节点的值
 				// And return the value of the head node
-				result := first.Value
+				result := next.Value
 
 				// 如果头节点不等于尾节点，尝试将队列的头节点设置为头节点的下一个节点
 				// If the head node is not equal to the tail node, try to set the head node of the queue to the next node of the head node
-				if shd.CompareAndSwapNode(&q.head, head, first) {
+				if shd.CompareAndSwapNode(&q.head, head, next) {
 					// 如果成功，那么减少队列的长度
 					// If successful, then decrease the length of the queue
 					atomic.AddUint64(&q.length, ^uint64(0))
 
 					// 然后重置头节点
 					// Then reset the head node
-					head.Reset()
+					head.ResetAll()
 
 					// 检查结果是否为空值
 					// Check if the result is an empty value
@@ -159,10 +163,14 @@ func (q *LockFreeQueue) Length() uint64 {
 // Reset 方法用于重置 LockFreeQueue 队列
 // The Reset method is used to reset the LockFreeQueue queue
 func (q *LockFreeQueue) Reset() {
+	// 创建一个新的 Node 结构体实例
+	// Create a new Node struct instance
+	dummy := shd.NewNode(shd.EmptyValue)
+
 	// 将队列的头节点和尾节点都设置为新创建的节点
 	// Set both the head node and the tail node of the queue to the newly created node
-	q.head = unsafe.Pointer(shd.EmptyNode)
-	q.tail = unsafe.Pointer(shd.EmptyNode)
+	q.head = unsafe.Pointer(dummy)
+	q.tail = unsafe.Pointer(dummy)
 
 	// 使用 atomic.StoreUint64 函数将队列的长度设置为 0
 	// Use the atomic.StoreUint64 function to set the length of the queue to 0

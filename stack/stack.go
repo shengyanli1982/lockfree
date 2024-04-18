@@ -25,7 +25,7 @@ func New() *LockFreeStack {
 	// 返回一个新的 LockFreeStack，栈顶元素为空节点
 	// Return a new LockFreeStack with the top element as an empty node
 	return &LockFreeStack{
-		top: unsafe.Pointer(shd.EmptyNode),
+		top: unsafe.Pointer(shd.NewNode(shd.EmptyValue)),
 	}
 }
 
@@ -99,7 +99,7 @@ func (q *LockFreeStack) Pop() interface{} {
 
 				// 重置原栈顶元素
 				// Reset the original top element
-				top.Reset()
+				top.ResetAll()
 
 				// 检查结果是否为空值
 				// Check if the result is an empty value
@@ -130,7 +130,7 @@ func (q *LockFreeStack) Length() uint64 {
 func (q *LockFreeStack) Reset() {
 	// 将队列的头节点和尾节点都设置为新创建的节点
 	// Set both the head node and the tail node of the queue to the newly created node
-	q.top = unsafe.Pointer(shd.EmptyNode)
+	q.top = unsafe.Pointer(shd.NewNode(shd.EmptyValue))
 
 	// 使用 atomic.StoreUint64 函数将队列的长度设置为 0
 	// Use the atomic.StoreUint64 function to set the length of the queue to 0
