@@ -32,6 +32,12 @@ func New() *LockFreeStack {
 // Push 方法用于向无锁栈中推入一个元素
 // The Push method is used to push an element into the lock-free stack
 func (q *LockFreeStack) Push(value interface{}) {
+	// 检查值是否为空, 如果为空则直接返回
+	// Check if the value is nil, if it is, return directly
+	if value == nil {
+		return
+	}
+
 	// 创建一个新的节点
 	// Create a new node
 	node := shd.NewNode(value)

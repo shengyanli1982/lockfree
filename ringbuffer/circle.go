@@ -1,10 +1,15 @@
 package ringbuffer
 
 import (
+	"errors"
 	"unsafe"
 
 	shd "github.com/shengyanli1982/lockfree/internal/shared"
 )
+
+var ErrorRingBufferIsFull = errors.New("ring buffer is full")
+
+var ErrorPushValueIsNil = errors.New("push value is nil")
 
 type LockFreeRingBuffer struct {
 	capacity uint64
@@ -40,16 +45,36 @@ func New(cap int) *LockFreeRingBuffer {
 	return rb
 }
 
-func (rb *LockFreeRingBuffer) Push(value interface{}) {
+func (rb *LockFreeRingBuffer) Push(value interface{}) error {
+	if value == nil {
+		return ErrorPushValueIsNil
+	}
 
+	if rb.isFull() {
+		return ErrorRingBufferIsFull
+	}
+
+	return nil
 }
 
 func (rb *LockFreeRingBuffer) Pop() interface{} {
+	if rb.isEmpty() {
+		return nil
+	}
+
 	return nil
 }
 
 func (rb *LockFreeRingBuffer) Length() uint64 {
 	return shd.LoadNode(&rb.wptr).Index - shd.LoadNode(&rb.rptr).Index
+}
+
+func (rb *LockFreeRingBuffer) isFull() bool {
+	return rb.Length() == rb.capacity
+}
+
+func (rb *LockFreeRingBuffer) isEmpty() bool {
+	return rb.Length() == 0
 }
 
 func (rb *LockFreeRingBuffer) Capacity() uint64 {

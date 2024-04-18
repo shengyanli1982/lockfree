@@ -41,6 +41,12 @@ func New() *LockFreeQueue {
 // Push 方法用于将一个值添加到 LockFreeQueue 队列的末尾
 // The Push method is used to add a value to the end of the LockFreeQueue queue
 func (q *LockFreeQueue) Push(value interface{}) {
+	// 检查值是否为空, 如果为空则直接返回
+	// Check if the value is nil, if it is, return directly
+	if value == nil {
+		return
+	}
+
 	// 创建一个新的 Node 结构体实例
 	// Create a new Node struct instance
 	node := shd.NewNode(value)
