@@ -31,6 +31,7 @@ func New(cap int) *LockFreeRingBuffer {
 		head:     unsafe.Pointer(dummy),
 		wptr:     unsafe.Pointer(dummy),
 		rptr:     unsafe.Pointer(dummy),
+		tail:     unsafe.Pointer(dummy),
 	}
 
 	for i := 0; i < cap; i++ {
