@@ -11,10 +11,6 @@ type Node struct {
 	// Value is the Value stored in the node, of type interface{}, which can store any type of Value
 	Value interface{}
 
-	// Index 是节点的索引，类型为 uint64
-	// Index is the index of the node, of type uint64
-	Index uint64
-
 	// Next 是指向下一个节点的指针，类型为 unsafe.Pointer
 	// Next is a pointer to the Next node, of type unsafe.Pointer
 	Next unsafe.Pointer
@@ -35,25 +31,11 @@ func (n *Node) ResetAll() {
 	// Set the value field to nil
 	n.Value = nil
 
-	// 将 index 字段设置为 0
-	// Set the index field to 0
-	n.Index = 0
-
 	// 将 next 字段设置为 nil
 	// Set the next field to nil
 	n.Next = nil
 }
 
-func (n *Node) ResetValue() {
-	// 将 value 字段设置为 nil
-	// Set the value field to nil
-	n.Value = nil
-}
-
 // 定义一个空的结构体，没有任何字段
 // Define an empty struct, with no fields
 var EmptyValue = struct{}{}
-
-// DefaultRingSize 是环形队列的默认大小
-// DefaultRingSize is the default size of the ring queue
-const DefaultRingSize = 2048
