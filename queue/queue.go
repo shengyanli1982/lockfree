@@ -28,13 +28,13 @@ type LockFreeQueue struct {
 func New() *LockFreeQueue {
 	// 创建一个新的 Node 结构体实例
 	// Create a new Node struct instance
-	dummy := shd.NewNode(shd.EmptyValue)
+	emptyNode := shd.NewNode(shd.EmptyValue)
 
 	// 返回一个新的 LockFreeQueue 结构体实例，其中 head 和 tail 都指向 EmptyNode 节点
 	// Returns a new instance of the LockFreeQueue struct, where both head and tail point to the dummy node
 	return &LockFreeQueue{
-		head: unsafe.Pointer(dummy),
-		tail: unsafe.Pointer(dummy),
+		head: unsafe.Pointer(emptyNode),
+		tail: unsafe.Pointer(emptyNode),
 	}
 }
 
@@ -171,12 +171,12 @@ func (q *LockFreeQueue) Length() uint64 {
 func (q *LockFreeQueue) Reset() {
 	// 创建一个新的 Node 结构体实例
 	// Create a new Node struct instance
-	dummy := shd.NewNode(shd.EmptyValue)
+	emptyNode := shd.NewNode(shd.EmptyValue)
 
 	// 将队列的头节点和尾节点都设置为新创建的节点
 	// Set both the head node and the tail node of the queue to the newly created node
-	q.head = unsafe.Pointer(dummy)
-	q.tail = unsafe.Pointer(dummy)
+	q.head = unsafe.Pointer(emptyNode)
+	q.tail = unsafe.Pointer(emptyNode)
 
 	// 使用 atomic.StoreUint64 函数将队列的长度设置为 0
 	// Use the atomic.StoreUint64 function to set the length of the queue to 0
