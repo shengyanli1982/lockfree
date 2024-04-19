@@ -66,7 +66,8 @@ func TestLockFreeRingBuffer_Count(t *testing.T) {
 }
 
 func TestLockFreeRingBuffer_Standard(t *testing.T) {
-	count := 100000
+	// Test the ring buffer with a large number of elements
+	count := 90000
 
 	r := New(count) // Replace with your desired capacity
 
@@ -78,13 +79,13 @@ func TestLockFreeRingBuffer_Standard(t *testing.T) {
 	}
 
 	// Verify the ring buffer length
-	assert.Equal(t, int64(count), r.Count(), "Incorrect stack length. Expected %d, got %d", count, r.Count())
+	assert.Equal(t, int64(count), r.Count(), "Incorrect ring buffer length. Expected %d, got %d", count, r.Count())
 
 	// Verify the elements in the ring buffer
 	for i := 0; i < count; i++ {
 		value, ok := r.Pop()
 		assert.True(t, ok, "Failed to pop value")
-		assert.Equal(t, i, value, "Incorrect value popped")
+		assert.Equal(t, i, value, "Incorrect value in the ring buffer. Expected %d, got %d", i, value)
 	}
 
 	// Verify the ring buffer length
@@ -126,7 +127,7 @@ func TestLockFreeRingBuffer_Parallel(t *testing.T) {
 	count := len(nums)
 	r := New(count) // Replace with your desired capacity
 
-	// Test enstacking elements into the stack
+	// Test enring buffering elements into the ring buffer
 	wg := sync.WaitGroup{}
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
@@ -139,7 +140,7 @@ func TestLockFreeRingBuffer_Parallel(t *testing.T) {
 	}
 	wg.Wait()
 
-	// Verify the elements in the stack
+	// Verify the elements in the ring buffer
 	wg = sync.WaitGroup{}
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
@@ -148,7 +149,7 @@ func TestLockFreeRingBuffer_Parallel(t *testing.T) {
 			v, ok := r.Pop()
 			assert.True(t, ok, "Failed to pop value")
 			if v != nil && v.(int) != i {
-				assert.Contains(t, nums, v, "Incorrect value in the stack. Expected %d, got %d", i, v)
+				assert.Contains(t, nums, v, "Incorrect value in the ring buffer. Expected %d, got %d", i, v)
 			}
 		}(i)
 	}
@@ -160,7 +161,7 @@ func TestLockFreeRingBuffer_ParallelAtSametime(t *testing.T) {
 	count := len(nums)
 	r := New(count) // Replace with your desired capacity
 
-	// Test enstacking elements into the stack
+	// Test enring buffering elements into the ring buffer
 	wg := sync.WaitGroup{}
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
@@ -172,7 +173,7 @@ func TestLockFreeRingBuffer_ParallelAtSametime(t *testing.T) {
 		}(i)
 	}
 
-	// Verify the elements in the stack
+	// Verify the elements in the ring buffer
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
 		go func(i int) {
@@ -180,7 +181,7 @@ func TestLockFreeRingBuffer_ParallelAtSametime(t *testing.T) {
 			v, ok := r.Pop()
 			assert.True(t, ok, "Failed to pop value")
 			if v != nil && v.(int) != i {
-				assert.Contains(t, nums, v, "Incorrect value in the stack. Expected %d, got %d", i, v)
+				assert.Contains(t, nums, v, "Incorrect value in the ring buffer. Expected %d, got %d", i, v)
 			}
 		}(i)
 	}

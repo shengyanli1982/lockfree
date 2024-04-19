@@ -8,15 +8,19 @@ import (
 )
 
 func TestLockFreeQueue_Standard(t *testing.T) {
+	// Number of elements to test
+	count := 1000000
+
+	// Create a new queue
 	q := New()
 
 	// Test enqueueing elements into the queue
-	for i := 0; i < 100000; i++ {
+	for i := 0; i < count; i++ {
 		q.Push(i)
 	}
 
 	// Verify the elements in the queue
-	for i := 0; i < 100000; i++ {
+	for i := 0; i < count; i++ {
 		v := q.Pop()
 		if v != nil {
 			assert.Equal(t, i, v, "Incorrect value in the queue. Expected %d, got %d", i, v)

@@ -8,15 +8,22 @@ import (
 )
 
 func TestLockFreeStack_Standard(t *testing.T) {
+	// Number of elements to test
+	count := 1000000
+
+	// Create a new stack
 	q := New()
 
 	// Test enstacking elements into the stack
-	for i := 0; i < 100000; i++ {
+	for i := 0; i < count; i++ {
 		q.Push(i)
 	}
 
+	// Verify the stack length
+	assert.Equal(t, uint64(count), q.Length(), "Incorrect stack length. Expected %d, got %d", count, q.Length())
+
 	// Verify the elements in the stack
-	for i := 99999; i >= 0; i-- {
+	for i := count - 1; i >= 0; i-- {
 		v := q.Pop()
 		if v != nil {
 			assert.Equal(t, i-1, v, "Incorrect value in the stack. Expected %d, got %d", i, v)
