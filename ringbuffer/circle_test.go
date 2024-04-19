@@ -2,6 +2,7 @@ package ringbuffer
 
 import (
 	"sync"
+	"sync/atomic"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -63,6 +64,34 @@ func TestLockFreeRingBuffer_Count(t *testing.T) {
 	// Check the count of the ring buffer after popping all values
 	count = r.Count()
 	assert.Equal(t, int64(0), count, "Incorrect count of the ring buffer after popping all values")
+}
+
+func TestLockFreeRingBuffer_Reset(t *testing.T) {
+	r := New(5) // Replace with your desired capacity
+
+	// Push values into the ring buffer
+	for i := 0; i < 5; i++ {
+		r.Push(i)
+	}
+
+	// Call the Reset method
+	r.Reset()
+
+	// Check the count of the ring buffer after resetting
+	count := r.Count()
+	assert.Equal(t, int64(0), count, "Incorrect count of the ring buffer after resetting")
+
+	// Pop values from the ring buffer after resetting
+	for i := 0; i < 5; i++ {
+		_, ok := r.Pop()
+		assert.False(t, ok, "Popped value from the ring buffer after resetting")
+	}
+
+	// Check the head and tail indices after resetting
+	head := atomic.LoadInt64(&r.head)
+	tail := atomic.LoadInt64(&r.tail)
+	assert.Equal(t, int64(0), head, "Incorrect head index of the ring buffer after resetting")
+	assert.Equal(t, int64(0), tail, "Incorrect tail index of the ring buffer after resetting")
 }
 
 func TestLockFreeRingBuffer_Standard(t *testing.T) {

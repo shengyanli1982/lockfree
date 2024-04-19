@@ -110,6 +110,23 @@ func (r *LockFreeRingBuffer) Count() int64 {
 // Reset 是一个方法，用于重置环形缓冲区
 // Reset is a method that resets the ring buffer
 func (r *LockFreeRingBuffer) Reset() {
+	// 使用 for 循环遍历环形缓冲区的每个元素
+	// Use a for loop to traverse each element of the ring buffer
+	for i := int64(0); i < r.capacity; i++ {
+		// 使用 atomic.LoadPointer 函数获取当前元素的指针
+		// Use the atomic.LoadPointer function to get the pointer of the current element
+		ptr := atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&r.data[i])))
+
+		// 如果当前元素的指针不为空
+		// If the pointer of the current element is not null
+		if ptr != unsafe.Pointer(nil) {
+
+			// 使用 LoadNode 方法获取节点，并调用 ResetAll 方法重置节点
+			// Use the LoadNode method to get the node and call the ResetAll method to reset the node
+			shd.LoadNode(&ptr).ResetAll()
+		}
+	}
+
 	// 使用 atomic.StoreInt64 函数将环形缓冲区的头部索引、尾部索引和元素数量都设置为 0
 	// Use the atomic.StoreInt64 function to set the head index, tail index, and number of elements in the ring buffer all to 0
 	atomic.StoreInt64(&r.head, 0)
