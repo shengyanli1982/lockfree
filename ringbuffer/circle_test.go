@@ -67,7 +67,7 @@ func TestLockFreeRingBuffer_Count(t *testing.T) {
 
 func TestLockFreeRingBuffer_Standard(t *testing.T) {
 	// Test the ring buffer with a large number of elements
-	count := 70000 // ???? why bad ptr
+	count := 1000000
 
 	r := New(count) // Replace with your desired capacity
 

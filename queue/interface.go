@@ -17,5 +17,5 @@ type Queue = interface {
 
 	// Length 方法返回队列的长度（即队列中元素的数量）
 	// The Length method returns the length of the queue (i.e., the number of elements in the queue)
-	Length() uint64
+	Length() int64
 }

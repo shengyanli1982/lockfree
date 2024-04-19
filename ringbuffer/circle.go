@@ -3,6 +3,8 @@ package ringbuffer
 import (
 	"sync/atomic"
 	"unsafe"
+
+	shd "github.com/shengyanli1982/lockfree/internal/shared"
 )
 
 // DefaultCircleBufferSize 是默认的环形缓冲区大小
@@ -14,7 +16,7 @@ const DefaultCircleBufferSize = 1024
 type LockFreeRingBuffer struct {
 	// data 是用于存储元素的切片
 	// data is a slice used to store elements
-	data []interface{}
+	data []unsafe.Pointer
 
 	// capacity 是环形缓冲区的容量
 	// capacity is the capacity of the ring buffer
@@ -42,12 +44,12 @@ func New(capacity int) *LockFreeRingBuffer {
 		capacity = DefaultCircleBufferSize
 	}
 
-	// 返回一个新的 LockFreeRingBuffer 实例
-	// Returns a new instance of LockFreeRingBuffer
-	return &LockFreeRingBuffer{
+	// 创建一个新的 LockFreeRingBuffer 实例
+	// Create a new instance of LockFreeRingBuffer
+	rb := &LockFreeRingBuffer{
 		// 使用 make 函数创建一个长度和容量都为 capacity 的切片
 		// Create a slice with length and capacity both equal to capacity using the make function
-		data: make([]interface{}, capacity),
+		data: make([]unsafe.Pointer, capacity),
 
 		// 设置环形缓冲区的容量为 capacity
 		// Set the capacity of the ring buffer to capacity
@@ -65,6 +67,16 @@ func New(capacity int) *LockFreeRingBuffer {
 		// Set the number of elements in the ring buffer to 0
 		count: 0,
 	}
+
+	// 使用 for 循环初始化环形缓冲区的每个元素为一个新的节点，节点的值为 EmptyValue
+	// Use a for loop to initialize each element of the ring buffer to a new node with a value of EmptyValue
+	for i := 0; i < capacity; i++ {
+		rb.data[i] = unsafe.Pointer(shd.NewNode(shd.EmptyValue))
+	}
+
+	// 返回新创建的 LockFreeRingBuffer 实例
+	// Return the newly created LockFreeRingBuffer instance
+	return rb
 }
 
 // IsEmpty 是一个方法，用于检查环形缓冲区是否为空
@@ -105,36 +117,108 @@ func (r *LockFreeRingBuffer) Reset() {
 	atomic.StoreInt64(&r.count, 0)
 }
 
+// Push 方法用于向无锁环形缓冲区中推入一个元素
+// The Push method is used to push an element into the lock-free ring buffer
 func (r *LockFreeRingBuffer) Push(value interface{}) bool {
+	// 使用无限循环，直到成功推入元素
+	// Use an infinite loop until an element is successfully pushed
 	for {
+		// 如果缓冲区已满，返回 false
+		// If the buffer is full, return false
 		if r.IsFull() {
 			return false
 		}
 
+		// 获取尾部元素的位置
+		// Get the position of the tail element
 		tail := atomic.LoadInt64(&r.tail)
+
+		// 计算下一个元素的位置
+		// Calculate the position of the next element
 		next := (tail + 1) % r.capacity
 
+		// 使用 CAS 操作尝试修改尾部元素的位置
+		// Use CAS operation to try to modify the position of the tail element
 		if atomic.CompareAndSwapInt64(&r.tail, tail, next) {
-			atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&r.data[tail])), unsafe.Pointer(&value))
+
+			// 获取尾部元素的指针
+			// Get the pointer of the tail element
+			ptr := atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&r.data[tail])))
+
+			// 如果尾部元素的指针不为空
+			// If the pointer of the tail element is not null
+			if ptr != nil {
+				// 修改尾部元素的值
+				// Modify the value of the tail element
+				shd.LoadNode(&ptr).Value = value
+			} else {
+				// 如果尾部元素的指针为空，创建一个新的节点并设置其值
+				// If the pointer of the tail element is null, create a new node and set its value
+				atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&r.data[tail])), unsafe.Pointer(shd.NewNode(value)))
+			}
+
+			// 缓冲区的元素数量加 1
+			// The number of elements in the buffer is increased by 1
 			atomic.AddInt64(&r.count, 1)
+
+			// 返回 true，表示成功推入元素
+			// Return true, indicating that the element was successfully pushed
 			return true
 		}
 	}
 }
 
+// Pop 方法用于从无锁环形缓冲区中弹出一个元素
+// The Pop method is used to pop an element from the lock-free ring buffer
 func (r *LockFreeRingBuffer) Pop() (interface{}, bool) {
+	// 使用无限循环，直到成功弹出元素
+	// Use an infinite loop until an element is successfully popped
 	for {
+		// 如果缓冲区为空，返回 nil 和 false
+		// If the buffer is empty, return nil and false
 		if r.IsEmpty() {
 			return nil, false
 		}
 
+		// 获取头部元素的位置
+		// Get the position of the head element
 		head := atomic.LoadInt64(&r.head)
-		next := (head + 1) % r.capacity
-		value := atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&r.data[head])))
 
+		// 计算下一个元素的位置
+		// Calculate the position of the next element
+		next := (head + 1) % r.capacity
+
+		// 使用 CAS 操作尝试修改头部元素的位置
+		// Use CAS operation to try to modify the position of the head element
 		if atomic.CompareAndSwapInt64(&r.head, head, next) {
+
+			// 如果成功修改，缓冲区的元素数量减 1
+			// If the modification is successful, the number of elements in the buffer is reduced by 1
 			atomic.AddInt64(&r.count, -1)
-			return *(*interface{})(value), true
+
+			// 获取头部元素的指针
+			// Get the pointer of the head element
+			ptr := atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&r.data[head])))
+
+			// 如果原指针不为空
+			// If the original pointer is not null
+			if ptr != nil {
+				// 获取节点
+				// Get the node
+				node := shd.LoadNode(&ptr)
+
+				// 获取节点的值
+				// Get the value of the node
+				value := node.Value
+
+				// 重置节点
+				// Reset the node
+				node.ResetAll()
+
+				// 返回节点的值和 true
+				// Return the value of the node and true
+				return value, true
+			}
 		}
 	}
 }

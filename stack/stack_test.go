@@ -20,7 +20,7 @@ func TestLockFreeStack_Standard(t *testing.T) {
 	}
 
 	// Verify the stack length
-	assert.Equal(t, uint64(count), q.Length(), "Incorrect stack length. Expected %d, got %d", count, q.Length())
+	assert.Equal(t, int64(count), q.Length(), "Incorrect stack length. Expected %d, got %d", count, q.Length())
 
 	// Verify the elements in the stack
 	for i := count - 1; i >= 0; i-- {
@@ -31,25 +31,25 @@ func TestLockFreeStack_Standard(t *testing.T) {
 	}
 
 	// Verify the stack length
-	assert.Equal(t, uint64(0), q.Length(), "Incorrect stack length. Expected 0, got %d", q.Length())
+	assert.Equal(t, int64(0), q.Length(), "Incorrect stack length. Expected 0, got %d", q.Length())
 }
 
 func TestLockFreeStack_Length(t *testing.T) {
 	q := New()
 
 	// Test the length of an empty stack
-	assert.Equal(t, uint64(0), q.Length(), "Incorrect stack length. Expected 0, got %d", q.Length())
+	assert.Equal(t, int64(0), q.Length(), "Incorrect stack length. Expected 0, got %d", q.Length())
 
 	// Test the length of a non-empty stack
 	for i := 0; i < 100; i++ {
 		q.Push(i)
-		assert.Equal(t, uint64(i+1), q.Length(), "Incorrect stack length. Expected %d, got %d", i+1, q.Length())
+		assert.Equal(t, int64(i+1), q.Length(), "Incorrect stack length. Expected %d, got %d", i+1, q.Length())
 	}
 
 	// Test the length of a stack after popping elements
 	for i := 0; i < 100; i++ {
 		q.Pop()
-		assert.Equal(t, uint64(100-i-1), q.Length(), "Incorrect stack length. Expected %d, got %d", 100-i-1, q.Length())
+		assert.Equal(t, int64(100-i-1), q.Length(), "Incorrect stack length. Expected %d, got %d", 100-i-1, q.Length())
 	}
 }
 

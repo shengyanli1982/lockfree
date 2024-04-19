@@ -12,7 +12,7 @@ import (
 type LockFreeStack struct {
 	// length 是栈的长度
 	// length is the length of the stack
-	length uint64
+	length int64
 
 	// top 是栈顶元素的指针
 	// top is a pointer to the top element of the stack
@@ -56,9 +56,10 @@ func (q *LockFreeStack) Push(value interface{}) {
 		// 使用 CAS 操作尝试修改栈顶元素
 		// Use CAS operation to try to modify the top element
 		if shd.CompareAndSwapNode(&q.top, top, node) {
+
 			// 如果成功修改，栈的长度加 1
 			// If the modification is successful, the length of the stack is increased by 1
-			atomic.AddUint64(&q.length, 1)
+			atomic.AddInt64(&q.length, 1)
 
 			// 结束循环
 			// End the loop
@@ -101,7 +102,7 @@ func (q *LockFreeStack) Pop() interface{} {
 
 				// 如果成功修改，栈的长度减 1
 				// If the modification is successful, the length of the stack is reduced by 1
-				atomic.AddUint64(&q.length, ^uint64(0))
+				atomic.AddInt64(&q.length, -1)
 
 				// 重置原栈顶元素
 				// Reset the original top element
@@ -110,10 +111,13 @@ func (q *LockFreeStack) Pop() interface{} {
 				// 检查结果是否为空值
 				// Check if the result is an empty value
 				if result == shd.EmptyValue {
+
 					// 如果结果是空值，返回 nil
 					// If the result is an empty value, return nil
 					return nil
+
 				} else {
+
 					// 如果结果不是空值，返回结果
 					// If the result is not an empty value, return the result
 					return result
@@ -125,10 +129,10 @@ func (q *LockFreeStack) Pop() interface{} {
 
 // Length 方法用于获取 LockFreeQueue 队列的长度
 // The Length method is used to get the length of the LockFreeQueue queue
-func (q *LockFreeStack) Length() uint64 {
-	// 使用 atomic.LoadUint64 函数获取队列的长度
-	// Use the atomic.LoadUint64 function to get the length of the queue
-	return atomic.LoadUint64(&q.length)
+func (q *LockFreeStack) Length() int64 {
+	// 使用 atomic.Loadint64 函数获取队列的长度
+	// Use the atomic.Loadint64 function to get the length of the queue
+	return atomic.LoadInt64(&q.length)
 }
 
 // Reset 方法用于重置 LockFreeQueue 队列
@@ -138,7 +142,7 @@ func (q *LockFreeStack) Reset() {
 	// Set both the head node and the tail node of the queue to the newly created node
 	q.top = unsafe.Pointer(shd.NewNode(shd.EmptyValue))
 
-	// 使用 atomic.StoreUint64 函数将队列的长度设置为 0
-	// Use the atomic.StoreUint64 function to set the length of the queue to 0
-	atomic.StoreUint64(&q.length, 0)
+	// 使用 atomic.Storeint64 函数将队列的长度设置为 0
+	// Use the atomic.Storeint64 function to set the length of the queue to 0
+	atomic.StoreInt64(&q.length, 0)
 }
