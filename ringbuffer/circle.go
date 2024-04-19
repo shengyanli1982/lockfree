@@ -192,10 +192,6 @@ func (r *LockFreeRingBuffer) Pop() (interface{}, bool) {
 		// Use CAS operation to try to modify the position of the head element
 		if atomic.CompareAndSwapInt64(&r.head, head, next) {
 
-			// 如果成功修改，缓冲区的元素数量减 1
-			// If the modification is successful, the number of elements in the buffer is reduced by 1
-			atomic.AddInt64(&r.count, -1)
-
 			// 获取头部元素的指针
 			// Get the pointer of the head element
 			ptr := atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&r.data[head])))
@@ -203,6 +199,7 @@ func (r *LockFreeRingBuffer) Pop() (interface{}, bool) {
 			// 如果原指针不为空
 			// If the original pointer is not null
 			if ptr != nil {
+
 				// 获取节点
 				// Get the node
 				node := shd.LoadNode(&ptr)
@@ -214,6 +211,10 @@ func (r *LockFreeRingBuffer) Pop() (interface{}, bool) {
 				// 重置节点
 				// Reset the node
 				node.ResetAll()
+
+				// 如果成功修改，缓冲区的元素数量减 1
+				// If the modification is successful, the number of elements in the buffer is reduced by 1
+				atomic.AddInt64(&r.count, -1)
 
 				// 返回节点的值和 true
 				// Return the value of the node and true
