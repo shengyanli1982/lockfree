@@ -26,7 +26,7 @@ func TestLockFreeStack_Standard(t *testing.T) {
 	for i := count - 1; i >= 0; i-- {
 		v := q.Pop()
 		if v != nil {
-			assert.Equal(t, i-1, v, "Incorrect value in the stack. Expected %d, got %d", i, v)
+			assert.Equal(t, i, v, "Incorrect value in the stack. Expected %d, got %d", i, v)
 		}
 	}
 

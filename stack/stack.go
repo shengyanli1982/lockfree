@@ -92,7 +92,7 @@ func (q *LockFreeStack) Pop() interface{} {
 
 			// 获取要返回的结果
 			// Get the result to be returned
-			result := next.Value
+			result := top.Value
 
 			// 使用 CAS 操作尝试修改栈顶元素
 			// Use CAS operation to try to modify the top element
