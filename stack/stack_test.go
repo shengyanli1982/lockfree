@@ -63,6 +63,21 @@ func TestLockFreeStack_EmptyPop(t *testing.T) {
 	}
 }
 
+func TestLockFreeQueue_IsEmpty(t *testing.T) {
+	q := New()
+
+	// Test an empty stack
+	assert.True(t, q.IsEmpty(), "Expected stack to be empty")
+
+	// Test a non-empty stack
+	q.Push(1)
+	assert.False(t, q.IsEmpty(), "Expected stack not to be empty")
+
+	// Test an empty stack after popping elements
+	q.Pop()
+	assert.True(t, q.IsEmpty(), "Expected stack to be empty after popping elements")
+}
+
 func TestLockFreeStack_Parallel(t *testing.T) {
 	nums := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
 	q := New()
@@ -120,4 +135,3 @@ func TestLockFreeStack_ParallelAtSametime(t *testing.T) {
 	}
 	wg.Wait()
 }
-

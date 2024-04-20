@@ -48,14 +48,14 @@ goos: darwin
 goarch: amd64
 pkg: github.com/shengyanli1982/lockfree/benchmark
 cpu: Intel(R) Xeon(R) CPU E5-4627 v2 @ 3.30GHz
-BenchmarkStdChannel-8                   	16075671	        79.43 ns/op	       0 B/op	       0 allocs/op
-BenchmarkStdChannelParallel-8           	10142773	       115.6 ns/op	       0 B/op	       0 allocs/op
-BenchmarkLockFreeQueue-8                	 8709964	       128.0 ns/op	      39 B/op	       1 allocs/op
-BenchmarkLockFreeQueueParallel-8        	 4380824	       267.7 ns/op	      32 B/op	       1 allocs/op
-BenchmarkLockFreeStack-8                	 8203516	       133.9 ns/op	      39 B/op	       1 allocs/op
-BenchmarkLockFreeStackParallel-8        	 4175450	       289.1 ns/op	      32 B/op	       1 allocs/op
-BenchmarkLockFreeRingBuffer-8           	 8293804	       137.2 ns/op	      23 B/op	       2 allocs/op
-BenchmarkLockFreeRingBufferParallel-8   	 3736094	       335.7 ns/op	      49 B/op	       6 allocs/op
+BenchmarkStdChannel-8                   	13972540	        77.07 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStdChannelParallel-8           	10272735	       113.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLockFreeQueue-8                	 9709624	       126.0 ns/op	      39 B/op	       1 allocs/op
+BenchmarkLockFreeQueueParallel-8        	 4724350	       253.9 ns/op	      32 B/op	       1 allocs/op
+BenchmarkLockFreeStack-8                	10666360	       107.7 ns/op	      39 B/op	       1 allocs/op
+BenchmarkLockFreeStackParallel-8        	 4609512	       256.9 ns/op	      32 B/op	       1 allocs/op
+BenchmarkLockFreeRingBuffer-8           	10800597	       111.1 ns/op	      24 B/op	       3 allocs/op
+BenchmarkLockFreeRingBufferParallel-8   	 4838744	       249.5 ns/op	      48 B/op	       6 allocs/op
 ```
 
 # Quick Start

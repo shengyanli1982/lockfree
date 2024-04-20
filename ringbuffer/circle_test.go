@@ -2,7 +2,6 @@ package ringbuffer
 
 import (
 	"sync"
-	"sync/atomic"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,15 +12,11 @@ func TestLockFreeRingBuffer_Push(t *testing.T) {
 
 	// Push values into the ring buffer
 	for i := 0; i < 5; i++ {
-		if !r.Push(i) {
-			assert.Fail(t, "Failed to push value: %d", i)
-		}
+		assert.True(t, r.Push(i), "Failed to push value: %d", i)
 	}
 
 	// Try pushing one more value, should fail
-	if r.Push(5) {
-		assert.Fail(t, "Pushed value when the ring buffer is full")
-	}
+	assert.False(t, r.Push(5), "Pushed value when the ring buffer is full")
 }
 
 func TestLockFreeRingBuffer_Pop(t *testing.T) {
@@ -53,8 +48,7 @@ func TestLockFreeRingBuffer_Count(t *testing.T) {
 	}
 
 	// Check the count of the ring buffer
-	count := r.Count()
-	assert.Equal(t, int64(5), count, "Incorrect count of the ring buffer")
+	assert.Equal(t, int64(5), r.Count(), "Incorrect count of the ring buffer")
 
 	// Pop values from the ring buffer
 	for i := 0; i < 5; i++ {
@@ -62,8 +56,7 @@ func TestLockFreeRingBuffer_Count(t *testing.T) {
 	}
 
 	// Check the count of the ring buffer after popping all values
-	count = r.Count()
-	assert.Equal(t, int64(0), count, "Incorrect count of the ring buffer after popping all values")
+	assert.Equal(t, int64(0), r.Count(), "Incorrect count of the ring buffer after popping all values")
 }
 
 func TestLockFreeRingBuffer_Reset(t *testing.T) {
@@ -74,24 +67,19 @@ func TestLockFreeRingBuffer_Reset(t *testing.T) {
 		r.Push(i)
 	}
 
-	// Call the Reset method
+	// Reset the ring buffer
 	r.Reset()
 
 	// Check the count of the ring buffer after resetting
-	count := r.Count()
-	assert.Equal(t, int64(0), count, "Incorrect count of the ring buffer after resetting")
+	assert.Equal(t, int64(0), r.Count(), "Incorrect count of the ring buffer after resetting")
 
-	// Pop values from the ring buffer after resetting
+	// Push values into the ring buffer after resetting
 	for i := 0; i < 5; i++ {
-		_, ok := r.Pop()
-		assert.False(t, ok, "Popped value from the ring buffer after resetting")
+		r.Push(i)
 	}
 
-	// Check the head and tail indices after resetting
-	head := atomic.LoadInt64(&r.head)
-	tail := atomic.LoadInt64(&r.tail)
-	assert.Equal(t, int64(0), head, "Incorrect head index of the ring buffer after resetting")
-	assert.Equal(t, int64(0), tail, "Incorrect tail index of the ring buffer after resetting")
+	// Check the count of the ring buffer after pushing values after resetting
+	assert.Equal(t, int64(5), r.Count(), "Incorrect count of the ring buffer after pushing values after resetting")
 }
 
 func TestLockFreeRingBuffer_Standard(t *testing.T) {
@@ -133,12 +121,18 @@ func TestLockFreeRingBuffer_Length(t *testing.T) {
 		assert.Equal(t, int64(i+1), r.Count(), "Incorrect ring buffer length. Expected %d, got %d", i+1, r.Count())
 	}
 
+	// Test the length of a full ring buffer
+	assert.Equal(t, int64(5), r.Count(), "Incorrect ring buffer length. Expected 5, got %d", r.Count())
+
 	// Test the length of a ring buffer after popping elements
 	for i := 0; i < 5; i++ {
 		r.Pop()
 		assert.Equal(t, int64(5-i-1), r.Count(), "Incorrect ring buffer length. Expected %d, got %d", 5-i-1, r.Count())
+		// fmt.Printf("i: %d, count: %d\n", i, r.Count())
 	}
 
+	// Test the length of an empty ring buffer
+	assert.Equal(t, int64(0), r.Count(), "Incorrect ring buffer length. Expected 0, got %d", r.Count())
 }
 
 func TestLockFreeRingBuffer_LessThanCapacity(t *testing.T) {

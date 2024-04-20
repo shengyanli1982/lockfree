@@ -60,6 +60,21 @@ func TestLockFreeQueue_EmptyPop(t *testing.T) {
 	}
 }
 
+func TestLockFreeQueue_IsEmpty(t *testing.T) {
+	q := New()
+
+	// Test an empty queue
+	assert.True(t, q.IsEmpty(), "Expected queue to be empty")
+
+	// Test a non-empty queue
+	q.Push(1)
+	assert.False(t, q.IsEmpty(), "Expected queue not to be empty")
+
+	// Test an empty queue after popping elements
+	q.Pop()
+	assert.True(t, q.IsEmpty(), "Expected queue to be empty after popping elements")
+}
+
 func TestLockFreeQueue_Parallel(t *testing.T) {
 	nums := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
 	q := New()

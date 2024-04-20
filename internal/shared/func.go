@@ -28,6 +28,19 @@ func ResetNodeAll(n *Node) {
 	// Set the value field to nil
 	n.Value = nil
 
+	// 将 index 字段设置为 0
+	// Set the index field to 0
+	n.Index = 0
+
+}
+
+// ResetNodeWithoutIndex 方法用于重置 Node 结构体的值，但不重置 index 字段
+// The ResetNodeWithoutIndex method is used to reset the value of the Node struct, but not the index field
+func ResetNodeWithoutIndex(n *Node) {
+	// 将 value 字段设置为 nil
+	// Set the value field to nil
+	n.Value = nil
+
 	// 将 next 字段设置为 nil
 	// Set the next field to nil
 	n.Next = nil
@@ -39,6 +52,12 @@ func ResetNodeValue(n *Node) {
 	// 将 value 字段设置为 nil
 	// Set the value field to nil
 	n.Value = nil
+}
+
+func ResetNodeIndex(n *Node) {
+	// 将 index 字段设置为 0
+	// Set the index field to 0
+	n.Index = 0
 }
 
 // ResetNodeNext 方法用于重置 Node 结构体 next 字段的值

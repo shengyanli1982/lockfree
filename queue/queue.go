@@ -1,7 +1,6 @@
 package queue
 
 import (
-	"sync/atomic"
 	"unsafe"
 
 	shd "github.com/shengyanli1982/lockfree/internal/shared"
@@ -10,10 +9,6 @@ import (
 // LockFreeQueue 是一个无锁队列结构体
 // LockFreeQueue is a lock-free queue struct
 type LockFreeQueue struct {
-	// length 是队列的长度
-	// length is the length of the queue
-	length int64
-
 	// head 是指向队列头部的指针
 	// head is a pointer to the head of the queue
 	head unsafe.Pointer
@@ -28,13 +23,13 @@ type LockFreeQueue struct {
 func New() *LockFreeQueue {
 	// 创建一个新的 Node 结构体实例
 	// Create a new Node struct instance
-	emptyNode := shd.NewNode(shd.EmptyValue)
+	initNode := shd.NewNode(shd.EmptyValue)
 
 	// 返回一个新的 LockFreeQueue 结构体实例，其中 head 和 tail 都指向 EmptyNode 节点
 	// Returns a new instance of the LockFreeQueue struct, where both head and tail point to the dummy node
 	return &LockFreeQueue{
-		head: unsafe.Pointer(emptyNode),
-		tail: unsafe.Pointer(emptyNode),
+		head: unsafe.Pointer(initNode),
+		tail: unsafe.Pointer(initNode),
 	}
 }
 
@@ -68,16 +63,16 @@ func (q *LockFreeQueue) Push(value interface{}) {
 			// 如果尾节点的下一个节点是 nil，说明尾节点是队列的最后一个节点
 			// If the next node of the tail node is nil, it means that the tail node is the last node of the queue
 			if next == nil {
+				// 将新节点的索引设置为尾节点索引加 1
+				// Set the index of the new node to the index of the tail node plus 1
+				node.Index = tail.Index + 1
+
 				// 尝试将尾节点的下一个节点设置为新节点
 				// Try to set the next node of the tail node to the new node
 				if shd.CompareAndSwapNode(&tail.Next, next, node) {
 					// 如果成功，那么将队列的尾节点设置为新节点
 					// If successful, then set the tail node of the queue to the new node
 					shd.CompareAndSwapNode(&q.tail, tail, node)
-
-					// 并增加队列的长度
-					// And increase the length of the queue
-					atomic.AddInt64(&q.length, 1)
 
 					// 然后返回，结束函数
 					// Then return to end the function
@@ -133,11 +128,6 @@ func (q *LockFreeQueue) Pop() interface{} {
 				// 如果头节点不等于尾节点，尝试将队列的头节点设置为头节点的下一个节点
 				// If the head node is not equal to the tail node, try to set the head node of the queue to the next node of the head node
 				if shd.CompareAndSwapNode(&q.head, head, next) {
-
-					// 如果成功，那么减少队列的长度
-					// If successful, then decrease the length of the queue
-					atomic.AddInt64(&q.length, -1)
-
 					// 然后重置头节点
 					// Then reset the head node
 					shd.ResetNodeAll(head)
@@ -162,9 +152,7 @@ func (q *LockFreeQueue) Pop() interface{} {
 // Length 方法用于获取 LockFreeQueue 队列的长度
 // The Length method is used to get the length of the LockFreeQueue queue
 func (q *LockFreeQueue) Length() int64 {
-	// 使用 atomic.Loadint64 函数获取队列的长度
-	// Use the atomic.Loadint64 function to get the length of the queue
-	return atomic.LoadInt64(&q.length)
+	return shd.LoadNode(&q.tail).Index - shd.LoadNode(&q.head).Index
 }
 
 // Reset 方法用于重置 LockFreeQueue 队列
@@ -172,20 +160,26 @@ func (q *LockFreeQueue) Length() int64 {
 func (q *LockFreeQueue) Reset() {
 	// 创建一个新的 Node 结构体实例
 	// Create a new Node struct instance
-	emptyNode := shd.NewNode(shd.EmptyValue)
+	initNode := shd.NewNode(shd.EmptyValue)
 
 	// 将队列的头节点和尾节点都设置为新创建的节点
 	// Set both the head node and the tail node of the queue to the newly created node
-	q.head = unsafe.Pointer(emptyNode)
-	q.tail = unsafe.Pointer(emptyNode)
-
-	// 使用 atomic.Storeint64 函数将队列的长度设置为 0
-	// Use the atomic.Storeint64 function to set the length of the queue to 0
-	atomic.StoreInt64(&q.length, 0)
+	q.head = unsafe.Pointer(initNode)
+	q.tail = unsafe.Pointer(initNode)
 }
 
+// IsEmpty 是一个方法，用于检查无锁队列是否为空
+// IsEmpty is a method used to check if the lock-free queue is empty
 func (q *LockFreeQueue) IsEmpty() bool {
-	// 使用 atomic.LoadInt64 函数获取队列的长度，如果长度为 0，那么队列为空
-	// Use the atomic.LoadInt64 function to get the length of the queue, if the length is 0, then the queue is empty
-	return atomic.LoadInt64(&q.length) == 0
+	// 使用 shd.LoadNode 函数加载队列的头节点
+	// Use the shd.LoadNode function to load the head node of the queue
+	head := shd.LoadNode(&q.head)
+
+	// 使用 shd.LoadNode 函数加载队列的尾节点
+	// Use the shd.LoadNode function to load the tail node of the queue
+	tail := shd.LoadNode(&q.tail)
+
+	// 如果头节点等于尾节点，并且头节点的下一个节点是 nil，那么队列为空
+	// If the head node is equal to the tail node and the next node of the head node is nil, then the queue is empty
+	return head == tail && head.Next == nil
 }

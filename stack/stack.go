@@ -1,7 +1,6 @@
 package stack
 
 import (
-	"sync/atomic"
 	"unsafe"
 
 	shd "github.com/shengyanli1982/lockfree/internal/shared"
@@ -10,10 +9,6 @@ import (
 // LockFreeStack 是一个无锁栈的结构体
 // LockFreeStack is a structure of a lock-free stack
 type LockFreeStack struct {
-	// length 是栈的长度
-	// length is the length of the stack
-	length int64
-
 	// top 是栈顶元素的指针
 	// top is a pointer to the top element of the stack
 	top unsafe.Pointer
@@ -22,10 +17,14 @@ type LockFreeStack struct {
 // New 函数用于创建一个新的无锁栈
 // The New function is used to create a new lock-free stack
 func New() *LockFreeStack {
-	// 返回一个新的 LockFreeStack，栈顶元素为空节点
-	// Return a new LockFreeStack with the top element as an empty node
+	// 使用 shd.NewNode 函数创建一个初始化节点，将该节点作为栈的底部元素
+	// Use the shd.NewNode function to create an initialization node, and use this node as the bottom element of the stack
+	initNode := shd.NewNode(shd.EmptyValue)
+
+	// 返回一个新的 LockFreeStack 实例，其中栈顶元素为刚刚创建的空节点
+	// Return a new LockFreeStack instance with the top element as the newly created empty node
 	return &LockFreeStack{
-		top: unsafe.Pointer(shd.NewNode(shd.EmptyValue)),
+		top: unsafe.Pointer(initNode),
 	}
 }
 
@@ -53,13 +52,13 @@ func (s *LockFreeStack) Push(value interface{}) {
 		// Set the next element of the new node to the current top element
 		node.Next = unsafe.Pointer(top)
 
+		// 设置新节点的索引为栈顶元素的索引加 1
+		// Set the index of the new node to the index of the top element plus 1
+		node.Index = top.Index + 1
+
 		// 使用 CAS 操作尝试修改栈顶元素
 		// Use CAS operation to try to modify the top element
 		if shd.CompareAndSwapNode(&s.top, top, node) {
-			// 如果成功修改，栈的长度加 1
-			// If the modification is successful, the length of the stack is increased by 1
-			atomic.AddInt64(&s.length, 1)
-
 			// 结束循环
 			// End the loop
 			return
@@ -97,10 +96,6 @@ func (s *LockFreeStack) Pop() interface{} {
 			// 使用 CAS 操作尝试修改栈顶元素
 			// Use CAS operation to try to modify the top element
 			if shd.CompareAndSwapNode(&s.top, top, next) {
-				// 如果成功修改，栈的长度减 1
-				// If the modification is successful, the length of the stack is reduced by 1
-				atomic.AddInt64(&s.length, -1)
-
 				// 重置原栈顶元素
 				// Reset the original top element
 				shd.ResetNodeAll(top)
@@ -126,23 +121,25 @@ func (s *LockFreeStack) Pop() interface{} {
 func (s *LockFreeStack) Length() int64 {
 	// 使用 atomic.Loadint64 函数获取队列的长度
 	// Use the atomic.Loadint64 function to get the length of the queue
-	return atomic.LoadInt64(&s.length)
+	return shd.LoadNode(&s.top).Index
 }
 
 // Reset 方法用于重置 LockFreeQueue 队列
 // The Reset method is used to reset the LockFreeQueue queue
 func (s *LockFreeStack) Reset() {
+	// 使用 shd.NewNode 函数创建一个初始化节点，将该节点作为栈的底部元素
+	// Use the shd.NewNode function to create an initialization node, and use this node as the bottom element of the stack
+	initNode := shd.NewNode(shd.EmptyValue)
+
 	// 将队列的头节点和尾节点都设置为新创建的节点
 	// Set both the head node and the tail node of the queue to the newly created node
-	s.top = unsafe.Pointer(shd.NewNode(shd.EmptyValue))
-
-	// 使用 atomic.Storeint64 函数将队列的长度设置为 0
-	// Use the atomic.Storeint64 function to set the length of the queue to 0
-	atomic.StoreInt64(&s.length, 0)
+	s.top = unsafe.Pointer(initNode)
 }
 
+// IsEmpty 是一个方法，用于检查无锁栈是否为空
+// IsEmpty is a method used to check if the lock-free stack is empty
 func (s *LockFreeStack) IsEmpty() bool {
-	// 使用 atomic.LoadInt64 函数获取队列的长度，如果长度为 0，那么队列为空
-	// Use the atomic.LoadInt64 function to get the length of the queue, if the length is 0, then the queue is empty
-	return atomic.LoadInt64(&s.length) == 0
+	// 使用 shd.LoadNode 函数加载栈顶节点, 然后检查节点的 Index 是否为 0，如果为 0，表示栈为空
+	// Use the shd.LoadNode function to load the top node, then check if the Index of the node is 0, if it is 0, the stack is empty
+	return shd.LoadNode(&s.top).Index == 0
 }

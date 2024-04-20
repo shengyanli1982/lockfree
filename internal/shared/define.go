@@ -11,6 +11,8 @@ type Node struct {
 	// Value is the Value stored in the node, of type interface{}, which can store any type of Value
 	Value interface{}
 
+	// Index 是节点的索引，类型为 int64
+	// Index is the index of the node, of type int64
 	Index int64
 
 	// Next 是指向下一个节点的指针，类型为 unsafe.Pointer
@@ -25,8 +27,6 @@ func NewNode(v interface{}) *Node {
 	// Returns a new instance of the Node struct
 	return &Node{Value: v}
 }
-
-
 
 // 定义一个空的结构体，没有任何字段
 // Define an empty struct, with no fields
