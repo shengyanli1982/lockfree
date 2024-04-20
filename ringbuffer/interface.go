@@ -18,12 +18,4 @@ type RingBuffer = interface {
 	// Count 方法返回环形缓冲区中的元素数量
 	// The Count method returns the number of elements in the ring buffer
 	Count() int64
-
-	// IsFull 方法用于检查环形缓冲区是否已满
-	// The IsFull method is used to check whether the ring buffer is full
-	IsFull() bool
-
-	// IsEmpty 方法用于检查环形缓冲区是否为空
-	// The IsEmpty method is used to check whether the ring buffer is empty
-	IsEmpty() bool
 }

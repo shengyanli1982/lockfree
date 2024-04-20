@@ -11,6 +11,8 @@ type Node struct {
 	// Value is the Value stored in the node, of type interface{}, which can store any type of Value
 	Value interface{}
 
+	Index int64
+
 	// Next 是指向下一个节点的指针，类型为 unsafe.Pointer
 	// Next is a pointer to the Next node, of type unsafe.Pointer
 	Next unsafe.Pointer
@@ -24,17 +26,7 @@ func NewNode(v interface{}) *Node {
 	return &Node{Value: v}
 }
 
-// Reset 方法用于重置 Node 结构体的值
-// The Reset method is used to reset the value of the Node struct
-func (n *Node) ResetAll() {
-	// 将 value 字段设置为 nil
-	// Set the value field to nil
-	n.Value = nil
 
-	// 将 next 字段设置为 nil
-	// Set the next field to nil
-	n.Next = nil
-}
 
 // 定义一个空的结构体，没有任何字段
 // Define an empty struct, with no fields

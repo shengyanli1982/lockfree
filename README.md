@@ -38,6 +38,26 @@ I created `lockfree` to provide Go developers with a straightforward, user-frien
 go get github.com/shengyanli1982/lockfree
 ```
 
+# Benchmark
+
+The following benchmark results show the performance of the `lockfree` library compared to the standard `channel` package in Go.
+
+```bash
+$ go test -bench=.
+goos: darwin
+goarch: amd64
+pkg: github.com/shengyanli1982/lockfree/benchmark
+cpu: Intel(R) Xeon(R) CPU E5-4627 v2 @ 3.30GHz
+BenchmarkStdChannel-8                   	16075671	        79.43 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStdChannelParallel-8           	10142773	       115.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLockFreeQueue-8                	 8709964	       128.0 ns/op	      39 B/op	       1 allocs/op
+BenchmarkLockFreeQueueParallel-8        	 4380824	       267.7 ns/op	      32 B/op	       1 allocs/op
+BenchmarkLockFreeStack-8                	 8203516	       133.9 ns/op	      39 B/op	       1 allocs/op
+BenchmarkLockFreeStackParallel-8        	 4175450	       289.1 ns/op	      32 B/op	       1 allocs/op
+BenchmarkLockFreeRingBuffer-8           	 8293804	       137.2 ns/op	      23 B/op	       2 allocs/op
+BenchmarkLockFreeRingBufferParallel-8   	 3736094	       335.7 ns/op	      49 B/op	       6 allocs/op
+```
+
 # Quick Start
 
 `lockfree` is designed to be easy to use. It provides a simple interface and follows good functional packaging principles, allowing users to quickly get started without requiring extensive learning or training.

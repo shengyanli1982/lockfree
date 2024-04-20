@@ -84,7 +84,7 @@ func New(capacity int) *LockFreeRingBuffer {
 func (r *LockFreeRingBuffer) IsEmpty() bool {
 	// 使用 atomic.LoadInt64 函数获取环形缓冲区中的元素数量，如果数量为 0，那么环形缓冲区为空
 	// Use the atomic.LoadInt64 function to get the number of elements in the ring buffer, if the number is 0, then the ring buffer is empty
-	return atomic.LoadInt64(&r.count) == 0
+	return r.count == 0
 }
 
 // IsFull 是一个方法，用于检查环形缓冲区是否已满
@@ -92,7 +92,7 @@ func (r *LockFreeRingBuffer) IsEmpty() bool {
 func (r *LockFreeRingBuffer) IsFull() bool {
 	// 使用 atomic.LoadInt64 函数获取环形缓冲区中的元素数量，如果数量等于环形缓冲区的容量，那么环形缓冲区已满
 	// Use the atomic.LoadInt64 function to get the number of elements in the ring buffer, if the number equals the capacity of the ring buffer, then the ring buffer is full
-	return atomic.LoadInt64(&r.count) == r.capacity
+	return r.count == r.capacity
 }
 
 // Capacity 是一个方法，返回环形缓冲区的容量
@@ -122,7 +122,7 @@ func (r *LockFreeRingBuffer) Reset() {
 		if ptr != unsafe.Pointer(nil) {
 			// 使用 LoadNode 方法获取节点，并调用 ResetAll 方法重置节点
 			// Use the LoadNode method to get the node and call the ResetAll method to reset the node
-			shd.LoadNode(&ptr).ResetAll()
+			shd.ResetNodeValue(shd.LoadNode(&ptr))
 		}
 	}
 
@@ -216,7 +216,7 @@ func (r *LockFreeRingBuffer) Pop() (interface{}, bool) {
 
 			// 重置节点
 			// Reset the node
-			node.ResetAll()
+			shd.ResetNodeValue(node)
 
 			// 返回节点的值和 true
 			// Return the value of the node and true

@@ -121,34 +121,3 @@ func TestLockFreeStack_ParallelAtSametime(t *testing.T) {
 	wg.Wait()
 }
 
-func BenchmarkLockFreeStack(b *testing.B) {
-	wg := sync.WaitGroup{}
-	wg.Add(2)
-	q := New()
-	b.ResetTimer()
-	go func() {
-		defer wg.Done()
-		for i := 0; i < b.N; i++ {
-			q.Push(i)
-		}
-	}()
-	go func() {
-		defer wg.Done()
-		for i := 0; i < b.N; i++ {
-			q.Pop()
-		}
-	}()
-	wg.Wait()
-}
-
-func BenchmarkLockFreeStackParallel(b *testing.B) {
-	q := New()
-	b.ResetTimer()
-
-	b.RunParallel(func(pb *testing.PB) {
-		for pb.Next() {
-			q.Push(1)
-			q.Pop()
-		}
-	})
-}

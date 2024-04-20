@@ -77,7 +77,7 @@ func (q *LockFreeQueue) Push(value interface{}) {
 
 					// 并增加队列的长度
 					// And increase the length of the queue
-					atomic.AddInt64(&q.length, 1)
+					q.length++
 
 					// 然后返回，结束函数
 					// Then return to end the function
@@ -136,11 +136,11 @@ func (q *LockFreeQueue) Pop() interface{} {
 
 					// 如果成功，那么减少队列的长度
 					// If successful, then decrease the length of the queue
-					atomic.AddInt64(&q.length, -1)
+					q.length--
 
 					// 然后重置头节点
 					// Then reset the head node
-					head.ResetAll()
+					shd.ResetNodeAll(head)
 
 					// 检查结果是否为空值
 					// Check if the result is an empty value
