@@ -87,6 +87,18 @@ func (r *LockFreeRingBuffer) Capacity() int64 {
 	return r.capacity
 }
 
+// IsEmpty 是一个方法，用于检查环形缓冲区是否为空
+// IsEmpty is a method that checks whether the ring buffer is empty
+func (r *LockFreeRingBuffer) IsEmpty() bool {
+	return r.Count() == 0
+}
+
+// IsFull 是一个方法，用于检查环形缓冲区是否已满
+// IsFull is a method that checks whether the ring buffer is full
+func (r *LockFreeRingBuffer) IsFull() bool {
+	return r.Count() == r.capacity
+}
+
 // Count 是一个方法，返回环形缓冲区中的元素数量
 // Count is a method that returns the number of elements in the ring buffer
 func (r *LockFreeRingBuffer) Count() int64 {
