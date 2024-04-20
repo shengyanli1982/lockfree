@@ -38,6 +38,21 @@
 go get github.com/shengyanli1982/lockfree
 ```
 
+# 基准测试
+
+以下基准测试结果展示了 `lockfree` 库与 Go 中标准的 `channel` 包的性能对比。
+
+| 基准测试                            | 操作次数   | 时间/操作   | 字节/操作 | 分配次数    |
+| ----------------------------------- | ---------- | ----------- | --------- | ----------- |
+| BenchmarkStdChannel                 | 13,588,708 | 75.50 ns/op | 0 B/op    | 0 allocs/op |
+| BenchmarkStdChannelParallel         | 10,480,938 | 115.6 ns/op | 0 B/op    | 0 allocs/op |
+| BenchmarkLockFreeQueue              | 8,948,024  | 139.0 ns/op | 31 B/op   | 1 allocs/op |
+| BenchmarkLockFreeQueueParallel      | 4,668,868  | 259.6 ns/op | 24 B/op   | 1 allocs/op |
+| BenchmarkLockFreeStack              | 8,894,064  | 139.0 ns/op | 31 B/op   | 1 allocs/op |
+| BenchmarkLockFreeStackParallel      | 4,159,392  | 292.6 ns/op | 24 B/op   | 1 allocs/op |
+| BenchmarkLockFreeRingBuffer         | 11,992,060 | 130.4 ns/op | 21 B/op   | 2 allocs/op |
+| BenchmarkLockFreeRingBufferParallel | 3,868,318  | 328.9 ns/op | 47 B/op   | 6 allocs/op |
+
 # 快速入门
 
 `lockfree` 的设计目标是易于使用。它提供了简单的接口，并遵循良好的功能封装原则，使用户能够快速入门，无需进行大量的学习或培训。

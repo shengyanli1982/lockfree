@@ -241,38 +241,6 @@ func TestLockFreeRingBuffer_ParallelAtSametime(t *testing.T) {
 	wg.Wait()
 }
 
-func BenchmarkLockFreeRingBuffer(b *testing.B) {
-	wg := sync.WaitGroup{}
-	wg.Add(2)
-	r := New(b.N)
-	b.ResetTimer()
-	go func() {
-		defer wg.Done()
-		for i := 0; i < b.N; i++ {
-			r.Push(i)
-		}
-	}()
-	go func() {
-		defer wg.Done()
-		for i := 0; i < b.N; i++ {
-			r.Pop()
-		}
-	}()
-	wg.Wait()
-}
-
-func BenchmarkLockFreeRingBufferParallel(b *testing.B) {
-	r := New(5)
-	b.ResetTimer()
-
-	b.RunParallel(func(pb *testing.PB) {
-		for pb.Next() {
-			r.Push(1)
-			r.Pop()
-		}
-	})
-}
-
 func Benchmark_MOD(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_ = i % 265

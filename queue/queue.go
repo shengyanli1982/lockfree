@@ -133,26 +133,17 @@ func (q *LockFreeQueue) Pop() interface{} {
 				// 如果头节点不等于尾节点，尝试将队列的头节点设置为头节点的下一个节点
 				// If the head node is not equal to the tail node, try to set the head node of the queue to the next node of the head node
 				if shd.CompareAndSwapNode(&q.head, head, next) {
-
 					// 如果成功，那么减少队列的长度
 					// If successful, then decrease the length of the queue
 					atomic.AddInt64(&q.length, -1)
 
-					// 然后重置头节点
-					// Then reset the head node
+					// 然后重置头节点，包括其值、下一个节点和索引
+					// Then reset the head node, including its value, next node, and index
 					head.ResetAll()
 
-					// 检查结果是否为空值
-					// Check if the result is an empty value
-					if result == shd.EmptyValue {
-						// 如果结果是空值，返回 nil
-						// If the result is an empty value, return nil
-						return nil
-					} else {
-						// 如果结果不是空值，返回结果
-						// If the result is not an empty value, return the result
-						return result
-					}
+					// 返回头节点的值，表示成功从队列中弹出一个元素
+					// Return the value of the head node, indicating that an element has been successfully popped from the queue
+					return result
 				}
 			}
 		}
@@ -165,6 +156,14 @@ func (q *LockFreeQueue) Length() int64 {
 	// 使用 atomic.Loadint64 函数获取队列的长度
 	// Use the atomic.Loadint64 function to get the length of the queue
 	return atomic.LoadInt64(&q.length)
+}
+
+// IsEmpty 方法用于判断 LockFreeQueue 队列是否为空
+// The IsEmpty method is used to determine whether the LockFreeQueue queue is empty
+func (q *LockFreeQueue) IsEmpty() bool {
+	// 使用 Length 方法获取队列的长度，如果长度为 0，那么队列为空
+	// Use the Length method to get the length of the queue, if the length is 0, then the queue is empty
+	return q.Length() == 0
 }
 
 // Reset 方法用于重置 LockFreeQueue 队列
@@ -182,10 +181,4 @@ func (q *LockFreeQueue) Reset() {
 	// 使用 atomic.Storeint64 函数将队列的长度设置为 0
 	// Use the atomic.Storeint64 function to set the length of the queue to 0
 	atomic.StoreInt64(&q.length, 0)
-}
-
-func (q *LockFreeQueue) IsEmpty() bool {
-	// 使用 atomic.LoadInt64 函数获取队列的长度，如果长度为 0，那么队列为空
-	// Use the atomic.LoadInt64 function to get the length of the queue, if the length is 0, then the queue is empty
-	return atomic.LoadInt64(&q.length) == 0
 }
