@@ -1,4 +1,4 @@
-English | [中文](./README_CN.md)
+[English](./README.md) | 中文
 
 <div align="center">
 	<img src="assets/logo.png" alt="logo" width="500px">
@@ -8,53 +8,53 @@ English | [中文](./README_CN.md)
 [![Build Status](https://github.com/shengyanli1982/lockfree/actions/workflows/test.yaml/badge.svg)](https://github.com/shengyanli1982/lockfree/actions)
 [![Go Reference](https://pkg.go.dev/badge/github.com/shengyanli1982/lockfree.svg)](https://pkg.go.dev/github.com/shengyanli1982/lockfree)
 
-# Introduction
+# 介绍
 
-`lockfree` is a Go library that provides lock-free data structures and algorithms. It is designed to be simple, easy to use, and high performance, making it suitable for high-concurrency scenarios.
+`lockfree` 是一个提供无锁数据结构和算法的 Go 库。它被设计为简单、易于使用和高性能，适用于高并发场景。
 
-**Currently, `lockfree` offers the following data structures:**
+**目前，`lockfree` 提供以下数据结构：**
 
--   `Queue`: A lock-free queue
--   `Stack`: A lock-free stack
--   `RingBuffer`: A lock-free ring buffer
+-   `Queue`：无锁队列
+-   `Stack`：无锁栈
+-   `RingBuffer`：无锁环形缓冲区
 
-# Why use `lockfree`?
+# 为什么使用 `lockfree`？
 
-In high-concurrency scenarios, traditional lock-based data structures can introduce performance bottlenecks due to lock contention. Lock-free data structures can overcome this issue.
+在高并发场景中，传统的基于锁的数据结构可能由于锁竞争而引入性能瓶颈。无锁数据结构可以克服这个问题。
 
-I created `lockfree` to provide Go developers with a straightforward, user-friendly, and high-performance lock-free library. Through this project, I aim to enhance my skills in this area and help you overcome common challenges.
+我创建了 `lockfree` 来为 Go 开发者提供一个简单、用户友好且高性能的无锁库。通过这个项目，我旨在提升自己在这个领域的技能，并帮助您克服常见的挑战。
 
-# Advantages
+# 优势
 
--   Simple and user-friendly
--   No external dependencies
--   High performance
--   Thread-safe
--   Supports various data types and structures
+-   简单且用户友好
+-   无外部依赖
+-   高性能
+-   线程安全
+-   支持各种数据类型和结构
 
-# Installation
+# 安装
 
 ```bash
 go get github.com/shengyanli1982/lockfree
 ```
 
-# Quick Start
+# 快速入门
 
-`lockfree` is designed to be easy to use. It provides a simple interface and follows good functional packaging principles, allowing users to quickly get started without requiring extensive learning or training.
+`lockfree` 的设计目标是易于使用。它提供了简单的接口，并遵循良好的功能封装原则，使用户能够快速入门，无需进行大量的学习或培训。
 
-## 1. Queue
+## 1. 队列
 
-The `LockFreeQueue` is a thread-safe and lock-free `fifo` data structure. It offers basic operations without support for delaying, priority, timeout, or blocking operations. It is designed to be very simple.
+`LockFreeQueue` 是一个线程安全且无锁的 `fifo` 数据结构。它提供了基本的操作，但不支持延迟、优先级、超时或阻塞操作。它的设计非常简单。
 
-### Methods
+### 方法
 
--   `Push`: Pushes an element into the queue
--   `Pop`: Pops an element from the queue
--   `Length`: Gets the number of elements in the queue
--   `IsEmpty`: Checks if the queue is empty
--   `Reset`: Resets the queue
+-   `Push`：将元素推入队列
+-   `Pop`：从队列中弹出元素
+-   `Length`：获取队列中的元素数量
+-   `IsEmpty`：检查队列是否为空
+-   `Reset`：重置队列
 
-### Example
+### 示例
 
 ```go
 package main
@@ -96,7 +96,7 @@ func main() {
 }
 ```
 
-**Result**
+**执行结果**
 
 ```bash
 $ go run demo.go
@@ -112,19 +112,19 @@ $ go run demo.go
 >> pop: 9
 ```
 
-## 2. Stack
+## 2. 栈
 
-The `LockFreeStack` is a thread-safe and lock-free `lifo` data structure. It provides simple methods for pushing and popping elements, as well as getting the length and checking if the stack is empty.
+`LockFreeStack` 是一个线程安全且无锁的 `lifo` 数据结构。它提供了简单的方法来推入和弹出元素，以及获取栈的长度和检查栈是否为空。
 
-### Methods
+### 方法
 
--   `Push`: Pushes an element onto the stack
--   `Pop`: Pops an element from the stack
--   `Length`: Gets the number of elements in the stack
--   `IsEmpty`: Checks if the stack is empty
--   `Reset`: Resets the stack
+-   `Push`：将元素推入栈
+-   `Pop`：从栈中弹出元素
+-   `Length`：获取栈中的元素数量
+-   `IsEmpty`：检查栈是否为空
+-   `Reset`：重置栈
 
-### Example
+### 示例
 
 ```go
 package main
@@ -166,7 +166,7 @@ func main() {
 }
 ```
 
-**Result**
+**执行结果**
 
 ```bash
 $ go run demo.go
@@ -182,20 +182,20 @@ $ go run demo.go
 >> pop: 0
 ```
 
-## 3. RingBuffer
+## 3. 环形缓冲区
 
-The `LockFreeRingBuffer` is a thread-safe and lock-free data structure that implements a ring buffer. It provides methods for pushing and popping elements, as well as getting the length and checking if the buffer is full or empty.
+`LockFreeRingBuffer` 是一个线程安全且无锁的数据结构，实现了环形缓冲区。它提供了推入和弹出元素的方法，以及获取缓冲区长度和检查缓冲区是否满或空的功能。
 
-### Methods
+### 方法
 
--   `Push`: Pushes an element into the ring buffer
--   `Pop`: Pops an element from the ring buffer
--   `Count`: Gets the number of elements in the ring buffer
--   `Reset`: Resets the ring buffer
--   `IsFull`: Checks if the ring buffer is full
--   `IsEmpty`: Checks if the ring buffer is empty
+-   `Push`：将元素推入环形缓冲区
+-   `Pop`：从环形缓冲区弹出元素
+-   `Count`：获取环形缓冲区中的元素数量
+-   `Reset`：重置环形缓冲区
+-   `IsFull`：检查环形缓冲区是否已满
+-   `IsEmpty`：检查环形缓冲区是否为空
 
-### Example
+### 示例
 
 ```go
 package main
@@ -241,7 +241,7 @@ func main() {
 }
 ```
 
-**Result**
+**执行结果**
 
 ```bash
 $ go run demo.go
