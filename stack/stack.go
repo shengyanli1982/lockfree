@@ -58,7 +58,7 @@ func (s *LockFreeStack) Push(value interface{}) {
 		if shd.CompareAndSwapNode(&s.top, top, node) {
 			// 如果成功修改，栈的长度加 1
 			// If the modification is successful, the length of the stack is increased by 1
-			s.length++
+			atomic.AddInt64(&s.length, 1)
 
 			// 结束循环
 			// End the loop
@@ -99,7 +99,7 @@ func (s *LockFreeStack) Pop() interface{} {
 			if shd.CompareAndSwapNode(&s.top, top, next) {
 				// 如果成功修改，栈的长度减 1
 				// If the modification is successful, the length of the stack is reduced by 1
-				s.length--
+				atomic.AddInt64(&s.length, -1)
 
 				// 重置原栈顶元素
 				// Reset the original top element
