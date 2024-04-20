@@ -56,7 +56,6 @@ func (q *LockFreeStack) Push(value interface{}) {
 		// 使用 CAS 操作尝试修改栈顶元素
 		// Use CAS operation to try to modify the top element
 		if shd.CompareAndSwapNode(&q.top, top, node) {
-
 			// 如果成功修改，栈的长度加 1
 			// If the modification is successful, the length of the stack is increased by 1
 			atomic.AddInt64(&q.length, 1)
@@ -85,7 +84,6 @@ func (q *LockFreeStack) Pop() interface{} {
 		// 检查栈顶元素是否被其他线程修改
 		// Check if the top element has been modified by other threads
 		if top == shd.LoadNode(&q.top) {
-
 			// 如果栈为空，返回 nil
 			// If the stack is empty, return nil
 			if next == nil {
@@ -99,7 +97,6 @@ func (q *LockFreeStack) Pop() interface{} {
 			// 使用 CAS 操作尝试修改栈顶元素
 			// Use CAS operation to try to modify the top element
 			if shd.CompareAndSwapNode(&q.top, top, next) {
-
 				// 如果成功修改，栈的长度减 1
 				// If the modification is successful, the length of the stack is reduced by 1
 				atomic.AddInt64(&q.length, -1)
@@ -111,13 +108,10 @@ func (q *LockFreeStack) Pop() interface{} {
 				// 检查结果是否为空值
 				// Check if the result is an empty value
 				if result == shd.EmptyValue {
-
 					// 如果结果是空值，返回 nil
 					// If the result is an empty value, return nil
 					return nil
-
 				} else {
-
 					// 如果结果不是空值，返回结果
 					// If the result is not an empty value, return the result
 					return result

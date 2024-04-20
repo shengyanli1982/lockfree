@@ -54,7 +54,6 @@ func (q *LockFreeQueue) Push(value interface{}) {
 	// 使用无限循环来尝试将新节点添加到队列的末尾
 	// Use an infinite loop to try to add the new node to the end of the queue
 	for {
-		
 		// 加载队列的尾节点
 		// Load the tail node of the queue
 		tail := shd.LoadNode(&q.tail)
@@ -66,11 +65,9 @@ func (q *LockFreeQueue) Push(value interface{}) {
 		// 检查尾节点是否仍然是队列的尾节点
 		// Check if the tail node is still the tail node of the queue
 		if tail == shd.LoadNode(&q.tail) {
-
 			// 如果尾节点的下一个节点是 nil，说明尾节点是队列的最后一个节点
 			// If the next node of the tail node is nil, it means that the tail node is the last node of the queue
 			if next == nil {
-
 				// 尝试将尾节点的下一个节点设置为新节点
 				// Try to set the next node of the tail node to the new node
 				if shd.CompareAndSwapNode(&tail.Next, next, node) {
@@ -86,9 +83,7 @@ func (q *LockFreeQueue) Push(value interface{}) {
 					// Then return to end the function
 					return
 				}
-
 			} else {
-
 				// 如果尾节点的下一个节点不是 nil，说明尾节点不是队列的最后一个节点，那么将队列的尾节点设置为尾节点的下一个节点
 				// If the next node of the tail node is not nil, it means that the tail node is not the last node of the queue, then set the tail node of the queue to the next node of the tail node
 				shd.CompareAndSwapNode(&q.tail, tail, next)
@@ -103,7 +98,6 @@ func (q *LockFreeQueue) Pop() interface{} {
 	// 使用无限循环来尝试从队列的头部移除一个值
 	// Use an infinite loop to try to remove a value from the head of the queue
 	for {
-
 		// 加载队列的头节点
 		// Load the head node of the queue
 		head := shd.LoadNode(&q.head)
@@ -119,11 +113,9 @@ func (q *LockFreeQueue) Pop() interface{} {
 		// 检查头节点是否仍然是队列的头节点
 		// Check if the head node is still the head node of the queue
 		if head == shd.LoadNode(&q.head) {
-
 			// 如果头节点等于尾节点
 			// If the head node is equal to the tail node
 			if head == tail {
-
 				// 如果头节点的下一个节点是 nil，说明队列是空的，返回 nil
 				// If the next node of the head node is nil, it means that the queue is empty, return nil
 				if next == nil {
@@ -133,9 +125,7 @@ func (q *LockFreeQueue) Pop() interface{} {
 				// 如果头节点的下一个节点不是 nil，说明尾节点落后了，尝试将队列的尾节点设置为头节点的下一个节点
 				// If the next node of the head node is not nil, it means that the tail node is lagging behind, try to set the tail node of the queue to the next node of the head node
 				shd.CompareAndSwapNode(&q.tail, tail, next)
-
 			} else {
-
 				// 并返回头节点的值
 				// And return the value of the head node
 				result := next.Value
@@ -155,13 +145,10 @@ func (q *LockFreeQueue) Pop() interface{} {
 					// 检查结果是否为空值
 					// Check if the result is an empty value
 					if result == shd.EmptyValue {
-
 						// 如果结果是空值，返回 nil
 						// If the result is an empty value, return nil
 						return nil
-
 					} else {
-
 						// 如果结果不是空值，返回结果
 						// If the result is not an empty value, return the result
 						return result
