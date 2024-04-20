@@ -183,3 +183,9 @@ func (q *LockFreeQueue) Reset() {
 	// Use the atomic.Storeint64 function to set the length of the queue to 0
 	atomic.StoreInt64(&q.length, 0)
 }
+
+func (q *LockFreeQueue) IsEmpty() bool {
+	// 使用 atomic.LoadInt64 函数获取队列的长度，如果长度为 0，那么队列为空
+	// Use the atomic.LoadInt64 function to get the length of the queue, if the length is 0, then the queue is empty
+	return atomic.LoadInt64(&q.length) == 0
+}

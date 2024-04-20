@@ -18,4 +18,8 @@ type Queue = interface {
 	// Length 方法返回队列的长度（即队列中元素的数量）
 	// The Length method returns the length of the queue (i.e., the number of elements in the queue)
 	Length() int64
+
+	// IsEmpty 方法用于检查队列是否为空
+	// The IsEmpty method is used to check if the queue is empty
+	IsEmpty() bool
 }
