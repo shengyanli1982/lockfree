@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"runtime"
 	"sync/atomic"
 	"unsafe"
 
@@ -73,7 +74,11 @@ func (q *LockFreeQueue) Push(value interface{}) {
 				if shd.CompareAndSwapNode(&tail.Next, next, node) {
 					// 如果成功，那么将队列的尾节点设置为新节点
 					// If successful, then set the tail node of the queue to the new node
-					shd.CompareAndSwapNode(&q.tail, tail, node)
+					if !shd.CompareAndSwapNode(&q.tail, tail, node) {
+						// 如果 CAS 操作失败，调用 runtime.Gosched 函数让出当前线程的执行权限
+						// If the CAS operation fails, call the runtime.Gosched function to yield the execution permission of the current thread
+						runtime.Gosched()
+					}
 
 					// 并增加队列的长度
 					// And increase the length of the queue
@@ -82,12 +87,24 @@ func (q *LockFreeQueue) Push(value interface{}) {
 					// 然后返回，结束函数
 					// Then return to end the function
 					return
+				} else {
+					// 如果 CAS 操作失败，调用 runtime.Gosched 函数让出当前线程的执行权限
+					// If the CAS operation fails, call the runtime.Gosched function to yield the execution permission of the current thread
+					runtime.Gosched()
 				}
 			} else {
 				// 如果尾节点的下一个节点不是 nil，说明尾节点不是队列的最后一个节点，那么将队列的尾节点设置为尾节点的下一个节点
 				// If the next node of the tail node is not nil, it means that the tail node is not the last node of the queue, then set the tail node of the queue to the next node of the tail node
-				shd.CompareAndSwapNode(&q.tail, tail, next)
+				if !shd.CompareAndSwapNode(&q.tail, tail, next) {
+					// 如果 CAS 操作失败，调用 runtime.Gosched 函数让出当前线程的执行权限
+					// If the CAS operation fails, call the runtime.Gosched function to yield the execution permission of the current thread
+					runtime.Gosched()
+				}
 			}
+		} else {
+			// 如果尾节点不是队列的尾节点，调用 runtime.Gosched 函数让出当前线程的执行权限
+			// If the tail node is not the tail node of the queue, call the runtime.Gosched function to yield the execution permission of the current thread
+			runtime.Gosched()
 		}
 	}
 }
@@ -124,7 +141,11 @@ func (q *LockFreeQueue) Pop() interface{} {
 
 				// 如果头节点的下一个节点不是 nil，说明尾节点落后了，尝试将队列的尾节点设置为头节点的下一个节点
 				// If the next node of the head node is not nil, it means that the tail node is lagging behind, try to set the tail node of the queue to the next node of the head node
-				shd.CompareAndSwapNode(&q.tail, tail, next)
+				if !shd.CompareAndSwapNode(&q.tail, tail, next) {
+					// 如果 CAS 操作失败，调用 runtime.Gosched 函数让出当前线程的执行权限
+					// If the CAS operation fails, call the runtime.Gosched function to yield the execution permission of the current thread
+					runtime.Gosched()
+				}
 			} else {
 				// 并返回头节点的值
 				// And return the value of the head node
@@ -144,8 +165,16 @@ func (q *LockFreeQueue) Pop() interface{} {
 					// 返回头节点的值，表示成功从队列中弹出一个元素
 					// Return the value of the head node, indicating that an element has been successfully popped from the queue
 					return result
+				} else {
+					// 如果 CAS 操作失败，调用 runtime.Gosched 函数让出当前线程的执行权限
+					// If the CAS operation fails, call the runtime.Gosched function to yield the execution permission of the current thread
+					runtime.Gosched()
 				}
 			}
+		} else {
+			// 如果头节点不是队列的头节点，调用 runtime.Gosched 函数让出当前线程的执行权限
+			// If the head node is not the head node of the queue, call the runtime.Gosched function to yield the execution permission of the current thread
+			runtime.Gosched()
 		}
 	}
 }

@@ -44,18 +44,14 @@ The following benchmark results show the performance of the `lockfree` library c
 
 | Benchmark                             | Operations | Time/op     | Bytes/op | Allocs/op   |
 | ------------------------------------- | ---------- | ----------- | -------- | ----------- |
-| BenchmarkStdChannel                   | 13,588,708 | 75.50 ns/op | 0 B/op   | 0 allocs/op |
-| BenchmarkStdChannelParallel           | 10,480,938 | 115.6 ns/op | 0 B/op   | 0 allocs/op |
-| BenchmarkLockFreeQueue                | 8,948,024  | 139.0 ns/op | 31 B/op  | 1 allocs/op |
-| BenchmarkLockFreeQueueParallel        | 4,668,868  | 259.6 ns/op | 24 B/op  | 1 allocs/op |
-| BenchmarkLockFreeStack-8              | 9,940,080  | 111.4 ns/op | 32 B/op  | 1 allocs/op |
-| BenchmarkLockFreeStackParallel-8      | 9,248,623  | 128.7 ns/op | 24 B/op  | 1 allocs/op |
-| BenchmarkLockFreeRingBuffer-8         | 11,704,080 | 114.2 ns/op | 19 B/op  | 2 allocs/op |
-| BenchmarkLockFreeRingBufferParallel-8 | 6,339,315  | 190.1 ns/op | 21 B/op  | 2 allocs/op |
-
-```bash
-
-```
+| BenchmarkStdChannel-8                 | 15,357,115 | 81.55 ns/op | 0 B/op   | 0 allocs/op |
+| BenchmarkStdChannelParallel-8         | 10,393,086 | 116.2 ns/op | 0 B/op   | 0 allocs/op |
+| BenchmarkLockFreeQueue-8              | 8,799,632  | 126.2 ns/op | 31 B/op  | 1 allocs/op |
+| BenchmarkLockFreeQueueParallel-8      | 6,817,446  | 174.0 ns/op | 24 B/op  | 1 allocs/op |
+| BenchmarkLockFreeStack-8              | 9,490,305  | 108.8 ns/op | 31 B/op  | 1 allocs/op |
+| BenchmarkLockFreeStackParallel-8      | 8,942,202  | 134.4 ns/op | 24 B/op  | 1 allocs/op |
+| BenchmarkLockFreeRingBuffer-8         | 12,610,683 | 114.7 ns/op | 20 B/op  | 2 allocs/op |
+| BenchmarkLockFreeRingBufferParallel-8 | 6,104,230  | 199.1 ns/op | 21 B/op  | 2 allocs/op |
 
 ### Struct Memory Alignment
 
