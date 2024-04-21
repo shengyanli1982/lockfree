@@ -53,6 +53,75 @@ go get github.com/shengyanli1982/lockfree
 | BenchmarkLockFreeRingBuffer         | 11,992,060 | 130.4 ns/op | 21 B/op   | 2 allocs/op |
 | BenchmarkLockFreeRingBufferParallel | 3,868,318  | 328.9 ns/op | 47 B/op   | 6 allocs/op |
 
+### 结构体内存对齐
+
+**1. 队列**
+
+```bash
+Queue alignment:
+
+---- Fields in struct ----
++----+----------------+-----------+-----------+
+| ID |   FIELDTYPE    | FIELDNAME | FIELDSIZE |
++----+----------------+-----------+-----------+
+| A  | int64          | length    | 8         |
+| B  | unsafe.Pointer | head      | 8         |
+| C  | unsafe.Pointer | tail      | 8         |
++----+----------------+-----------+-----------+
+---- Memory layout ----
+|A|A|A|A|A|A|A|A|
+|B|B|B|B|B|B|B|B|
+|C|C|C|C|C|C|C|C|
+
+total cost: 24 Bytes.
+```
+
+**2. 栈**
+
+```bash
+Stack alignment:
+
+---- Fields in struct ----
++----+----------------+-----------+-----------+
+| ID |   FIELDTYPE    | FIELDNAME | FIELDSIZE |
++----+----------------+-----------+-----------+
+| A  | int64          | length    | 8         |
+| B  | unsafe.Pointer | top       | 8         |
++----+----------------+-----------+-----------+
+---- Memory layout ----
+|A|A|A|A|A|A|A|A|
+|B|B|B|B|B|B|B|B|
+
+total cost: 16 Bytes.
+```
+
+**3. 环形缓冲区**
+
+```bash
+RingBuffer alignment:
+
+---- Fields in struct ----
++----+------------------+-----------+-----------+
+| ID |    FIELDTYPE     | FIELDNAME | FIELDSIZE |
++----+------------------+-----------+-----------+
+| A  | int64            | capacity  | 8         |
+| B  | int64            | head      | 8         |
+| C  | int64            | tail      | 8         |
+| D  | int64            | count     | 8         |
+| E  | []unsafe.Pointer | data      | 24        |
++----+------------------+-----------+-----------+
+---- Memory layout ----
+|A|A|A|A|A|A|A|A|
+|B|B|B|B|B|B|B|B|
+|C|C|C|C|C|C|C|C|
+|D|D|D|D|D|D|D|D|
+|E|E|E|E|E|E|E|E|
+|E|E|E|E|E|E|E|E|
+|E|E|E|E|E|E|E|E|
+
+total cost: 56 Bytes.
+```
+
 # 快速入门
 
 `lockfree` 的设计目标是易于使用。它提供了简单的接口，并遵循良好的功能封装原则，使用户能够快速入门，无需进行大量的学习或培训。
