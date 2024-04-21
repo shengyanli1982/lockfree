@@ -1,6 +1,7 @@
 package ringbuffer
 
 import (
+	"runtime"
 	"sync/atomic"
 	"unsafe"
 
@@ -14,10 +15,6 @@ const DefaultCircleBufferSize = 1024
 // LockFreeRingBuffer 是一个无锁环形缓冲区的结构体
 // LockFreeRingBuffer is a structure of a lock-free ring buffer
 type LockFreeRingBuffer struct {
-	// data 是用于存储元素的切片
-	// data is a slice used to store elements
-	data []unsafe.Pointer
-
 	// capacity 是环形缓冲区的容量
 	// capacity is the capacity of the ring buffer
 	capacity int64
@@ -33,6 +30,10 @@ type LockFreeRingBuffer struct {
 	// count 是环形缓冲区中的元素数量
 	// count is the number of elements in the ring buffer
 	count int64
+
+	// data 是用于存储元素的切片
+	// data is a slice used to store elements
+	data []unsafe.Pointer
 }
 
 // New 是一个函数，用于创建一个新的 LockFreeRingBuffer 实例
@@ -82,17 +83,13 @@ func New(capacity int) *LockFreeRingBuffer {
 // IsEmpty 是一个方法，用于检查环形缓冲区是否为空
 // IsEmpty is a method that checks whether the ring buffer is empty
 func (r *LockFreeRingBuffer) IsEmpty() bool {
-	// 使用 atomic.LoadInt64 函数获取环形缓冲区中的元素数量，如果数量为 0，那么环形缓冲区为空
-	// Use the atomic.LoadInt64 function to get the number of elements in the ring buffer, if the number is 0, then the ring buffer is empty
-	return atomic.LoadInt64(&r.count) == 0
+	return r.Count() == 0
 }
 
 // IsFull 是一个方法，用于检查环形缓冲区是否已满
 // IsFull is a method that checks whether the ring buffer is full
 func (r *LockFreeRingBuffer) IsFull() bool {
-	// 使用 atomic.LoadInt64 函数获取环形缓冲区中的元素数量，如果数量等于环形缓冲区的容量，那么环形缓冲区已满
-	// Use the atomic.LoadInt64 function to get the number of elements in the ring buffer, if the number equals the capacity of the ring buffer, then the ring buffer is full
-	return atomic.LoadInt64(&r.count) == r.capacity
+	return r.Count() == r.capacity
 }
 
 // Capacity 是一个方法，返回环形缓冲区的容量
@@ -171,6 +168,10 @@ func (r *LockFreeRingBuffer) Push(value interface{}) bool {
 			// 返回 true，表示成功推入元素
 			// Return true, indicating that the element was successfully pushed
 			return true
+		} else {
+			// 如果 CAS 操作失败，调用 runtime.Gosched 函数让出当前线程的执行权限
+			// If the CAS operation fails, call the runtime.Gosched function to yield the execution permission of the current thread
+			runtime.Gosched()
 		}
 	}
 }
@@ -221,6 +222,10 @@ func (r *LockFreeRingBuffer) Pop() (interface{}, bool) {
 			// 返回节点的值和 true
 			// Return the value of the node and true
 			return value, true
+		} else {
+			// 如果 CAS 操作失败，调用 runtime.Gosched 函数让出当前线程的执行权限
+			// If the CAS operation fails, call the runtime.Gosched function to yield the execution permission of the current thread
+			runtime.Gosched()
 		}
 	}
 }

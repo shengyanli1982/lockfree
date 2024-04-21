@@ -42,16 +42,85 @@ go get github.com/shengyanli1982/lockfree
 
 The following benchmark results show the performance of the `lockfree` library compared to the standard `channel` package in Go.
 
-| Benchmark                          | Operations | Time/op | Bytes/op | Allocs/op |
-|------------------------------------|------------|---------|----------|-----------|
-| BenchmarkStdChannel                | 13,588,708 | 75.50 ns/op | 0 B/op | 0 allocs/op |
-| BenchmarkStdChannelParallel        | 10,480,938 | 115.6 ns/op | 0 B/op | 0 allocs/op |
-| BenchmarkLockFreeQueue             | 8,948,024 | 139.0 ns/op | 31 B/op | 1 allocs/op |
-| BenchmarkLockFreeQueueParallel     | 4,668,868 | 259.6 ns/op | 24 B/op | 1 allocs/op |
-| BenchmarkLockFreeStack             | 8,894,064 | 139.0 ns/op | 31 B/op | 1 allocs/op |
-| BenchmarkLockFreeStackParallel     | 4,159,392 | 292.6 ns/op | 24 B/op | 1 allocs/op |
-| BenchmarkLockFreeRingBuffer        | 11,992,060 | 130.4 ns/op | 21 B/op | 2 allocs/op |
-| BenchmarkLockFreeRingBufferParallel| 3,868,318 | 328.9 ns/op | 47 B/op | 6 allocs/op |
+| Benchmark                             | Operations | Time/op     | Bytes/op | Allocs/op   |
+| ------------------------------------- | ---------- | ----------- | -------- | ----------- |
+| BenchmarkStdChannel-8                 | 15,357,115 | 81.55 ns/op | 0 B/op   | 0 allocs/op |
+| BenchmarkStdChannelParallel-8         | 10,393,086 | 116.2 ns/op | 0 B/op   | 0 allocs/op |
+| BenchmarkLockFreeQueue-8              | 8,799,632  | 126.2 ns/op | 31 B/op  | 1 allocs/op |
+| BenchmarkLockFreeQueueParallel-8      | 6,817,446  | 174.0 ns/op | 24 B/op  | 1 allocs/op |
+| BenchmarkLockFreeStack-8              | 9,490,305  | 108.8 ns/op | 31 B/op  | 1 allocs/op |
+| BenchmarkLockFreeStackParallel-8      | 8,942,202  | 134.4 ns/op | 24 B/op  | 1 allocs/op |
+| BenchmarkLockFreeRingBuffer-8         | 12,610,683 | 114.7 ns/op | 20 B/op  | 2 allocs/op |
+| BenchmarkLockFreeRingBufferParallel-8 | 6,104,230  | 199.1 ns/op | 21 B/op  | 2 allocs/op |
+
+### Struct Memory Alignment
+
+**1. Queue**
+
+```bash
+Queue alignment:
+
+---- Fields in struct ----
++----+----------------+-----------+-----------+
+| ID |   FIELDTYPE    | FIELDNAME | FIELDSIZE |
++----+----------------+-----------+-----------+
+| A  | int64          | length    | 8         |
+| B  | unsafe.Pointer | head      | 8         |
+| C  | unsafe.Pointer | tail      | 8         |
++----+----------------+-----------+-----------+
+---- Memory layout ----
+|A|A|A|A|A|A|A|A|
+|B|B|B|B|B|B|B|B|
+|C|C|C|C|C|C|C|C|
+
+total cost: 24 Bytes.
+```
+
+**2. Stack**
+
+```bash
+Stack alignment:
+
+---- Fields in struct ----
++----+----------------+-----------+-----------+
+| ID |   FIELDTYPE    | FIELDNAME | FIELDSIZE |
++----+----------------+-----------+-----------+
+| A  | int64          | length    | 8         |
+| B  | unsafe.Pointer | top       | 8         |
++----+----------------+-----------+-----------+
+---- Memory layout ----
+|A|A|A|A|A|A|A|A|
+|B|B|B|B|B|B|B|B|
+
+total cost: 16 Bytes.
+```
+
+**3. RingBuffer**
+
+```bash
+RingBuffer alignment:
+
+---- Fields in struct ----
++----+------------------+-----------+-----------+
+| ID |    FIELDTYPE     | FIELDNAME | FIELDSIZE |
++----+------------------+-----------+-----------+
+| A  | int64            | capacity  | 8         |
+| B  | int64            | head      | 8         |
+| C  | int64            | tail      | 8         |
+| D  | int64            | count     | 8         |
+| E  | []unsafe.Pointer | data      | 24        |
++----+------------------+-----------+-----------+
+---- Memory layout ----
+|A|A|A|A|A|A|A|A|
+|B|B|B|B|B|B|B|B|
+|C|C|C|C|C|C|C|C|
+|D|D|D|D|D|D|D|D|
+|E|E|E|E|E|E|E|E|
+|E|E|E|E|E|E|E|E|
+|E|E|E|E|E|E|E|E|
+
+total cost: 56 Bytes.
+```
 
 # Quick Start
 
