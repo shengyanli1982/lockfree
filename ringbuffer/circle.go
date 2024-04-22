@@ -72,7 +72,7 @@ func New(capacity int) *LockFreeRingBuffer {
 	// 使用 for 循环初始化环形缓冲区的每个元素为一个新的节点，节点的值为 EmptyValue
 	// Use a for loop to initialize each element of the ring buffer to a new node with a value of EmptyValue
 	for i := 0; i < capacity; i++ {
-		rb.data[i] = unsafe.Pointer(shd.NewNode(shd.EmptyValue))
+		rb.data[i] = unsafe.Pointer(shd.NewNode(nil))
 	}
 
 	// 返回新创建的 LockFreeRingBuffer 实例

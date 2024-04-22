@@ -26,7 +26,7 @@ func New() *LockFreeStack {
 	// 返回一个新的 LockFreeStack，栈顶元素为空节点
 	// Return a new LockFreeStack with the top element as an empty node
 	return &LockFreeStack{
-		top: unsafe.Pointer(shd.NewNode(shd.EmptyValue)),
+		top: unsafe.Pointer(shd.NewNode(nil)),
 	}
 }
 
@@ -110,17 +110,9 @@ func (s *LockFreeStack) Pop() interface{} {
 				// Reset the original top element
 				top.ResetAll()
 
-				// 检查结果是否为空值
-				// Check if the result is an empty value
-				if result == shd.EmptyValue {
-					// 如果结果是空值，返回 nil
-					// If the result is an empty value, return nil
-					return nil
-				} else {
-					// 如果结果不是空值，返回结果
-					// If the result is not an empty value, return the result
-					return result
-				}
+				// 如果结果不是空值，返回结果
+				// If the result is not an empty value, return the result
+				return result
 			} else {
 				// 如果 CAS 操作失败，调用 runtime.Gosched 函数让出当前线程的执行权限
 				// If the CAS operation fails, call the runtime.Gosched function to yield the execution permission of the current thread
@@ -151,7 +143,7 @@ func (s *LockFreeStack) IsEmpty() bool {
 func (s *LockFreeStack) Reset() {
 	// 将队列的头节点和尾节点都设置为新创建的节点
 	// Set both the head node and the tail node of the queue to the newly created node
-	s.top = unsafe.Pointer(shd.NewNode(shd.EmptyValue))
+	s.top = unsafe.Pointer(shd.NewNode(nil))
 
 	// 使用 atomic.Storeint64 函数将队列的长度设置为 0
 	// Use the atomic.Storeint64 function to set the length of the queue to 0

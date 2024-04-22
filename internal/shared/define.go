@@ -35,7 +35,3 @@ func (n *Node) ResetAll() {
 	// Set the next field to nil
 	n.Next = nil
 }
-
-// 定义一个空的结构体，没有任何字段
-// Define an empty struct, with no fields
-var EmptyValue = struct{}{}

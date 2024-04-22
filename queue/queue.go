@@ -29,7 +29,7 @@ type LockFreeQueue struct {
 func New() *LockFreeQueue {
 	// 创建一个新的 Node 结构体实例
 	// Create a new Node struct instance
-	emptyNode := shd.NewNode(shd.EmptyValue)
+	emptyNode := shd.NewNode(nil)
 
 	// 返回一个新的 LockFreeQueue 结构体实例，其中 head 和 tail 都指向 EmptyNode 节点
 	// Returns a new instance of the LockFreeQueue struct, where both head and tail point to the dummy node
@@ -200,7 +200,7 @@ func (q *LockFreeQueue) IsEmpty() bool {
 func (q *LockFreeQueue) Reset() {
 	// 创建一个新的 Node 结构体实例
 	// Create a new Node struct instance
-	emptyNode := shd.NewNode(shd.EmptyValue)
+	emptyNode := shd.NewNode(nil)
 
 	// 将队列的头节点和尾节点都设置为新创建的节点
 	// Set both the head node and the tail node of the queue to the newly created node
