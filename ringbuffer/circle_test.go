@@ -241,6 +241,42 @@ func TestLockFreeRingBuffer_ParallelAtSametime(t *testing.T) {
 	wg.Wait()
 }
 
+func TestLockFreeRingBuffer_ParallelDevilMode(t *testing.T) {
+	nums := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	count := len(nums) * 10000
+	r := New(count) // Replace with your desired capacity
+
+	// Test enring buffering elements into the ring buffer
+	wg := sync.WaitGroup{}
+	for j := 0; j < 10000; j++ {
+		for i := 0; i < 10; i++ {
+			wg.Add(1)
+			go func(i int) {
+				defer wg.Done()
+				if !r.Push(i) {
+					assert.Fail(t, "Failed to push value: %d", i)
+				}
+			}(i)
+		}
+	}
+
+	// Verify the elements in the ring buffer
+	for j := 0; j < 10000; j++ {
+		for i := 0; i < 10; i++ {
+			wg.Add(1)
+			go func(i int) {
+				defer wg.Done()
+				v, ok := r.Pop()
+				if v != nil && v.(int) != i {
+					assert.True(t, ok, "Failed to pop value")
+					assert.Contains(t, nums, v, "Incorrect value in the ring buffer. Expected %d, got %d", i, v)
+				}
+			}(i)
+		}
+	}
+	wg.Wait()
+}
+
 func Benchmark_MOD(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_ = i % 265

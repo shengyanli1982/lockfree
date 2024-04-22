@@ -117,3 +117,35 @@ func TestLockFreeQueue_ParallelAtSametime(t *testing.T) {
 	}
 	wg.Wait()
 }
+
+func TestLockFreeQueue_ParallelDevilMode(t *testing.T) {
+	nums := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	q := New()
+
+	// Test enqueueing elements into the queue
+	wg := sync.WaitGroup{}
+	for j := 0; j < 10000; j++ {
+		for i := 0; i < 10; i++ {
+			wg.Add(1)
+			go func(i int) {
+				defer wg.Done()
+				q.Push(i)
+			}(i)
+		}
+	}
+
+	// Verify the elements in the queue
+	for j := 0; j < 10000; j++ {
+		for i := 0; i < 10; i++ {
+			wg.Add(1)
+			go func(i int) {
+				defer wg.Done()
+				v := q.Pop()
+				if v != nil && v.(int) != i {
+					assert.Contains(t, nums, v.(int), "Incorrect value in the queue. Expected %d, got %d", i, v)
+				}
+			}(i)
+		}
+	}
+	wg.Wait()
+}
