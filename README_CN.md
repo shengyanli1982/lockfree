@@ -55,71 +55,28 @@ go get github.com/shengyanli1982/lockfree
 
 ### 结构体内存对齐
 
-**1. 队列**
+**节点结构体**
+
+为了优化内存访问和性能，在 `lockfree` 库中的 `Node` 对象被对齐到 32 字节。这是因为在 64 位系统上，Go 语言使用 8 字节对齐。
 
 ```bash
-Queue alignment:
+Node alignment:
 
 ---- Fields in struct ----
 +----+----------------+-----------+-----------+
 | ID |   FIELDTYPE    | FIELDNAME | FIELDSIZE |
 +----+----------------+-----------+-----------+
-| A  | int64          | length    | 8         |
-| B  | unsafe.Pointer | head      | 8         |
-| C  | unsafe.Pointer | tail      | 8         |
+| A  | interface {}   | Value     | 16        |
+| B  | unsafe.Pointer | Next      | 8         |
+| C  | int64          | _         | 8         |
 +----+----------------+-----------+-----------+
 ---- Memory layout ----
+|A|A|A|A|A|A|A|A|
 |A|A|A|A|A|A|A|A|
 |B|B|B|B|B|B|B|B|
 |C|C|C|C|C|C|C|C|
 
-total cost: 24 Bytes.
-```
-
-**2. 栈**
-
-```bash
-Stack alignment:
-
----- Fields in struct ----
-+----+----------------+-----------+-----------+
-| ID |   FIELDTYPE    | FIELDNAME | FIELDSIZE |
-+----+----------------+-----------+-----------+
-| A  | int64          | length    | 8         |
-| B  | unsafe.Pointer | top       | 8         |
-+----+----------------+-----------+-----------+
----- Memory layout ----
-|A|A|A|A|A|A|A|A|
-|B|B|B|B|B|B|B|B|
-
-total cost: 16 Bytes.
-```
-
-**3. 环形缓冲区**
-
-```bash
-RingBuffer alignment:
-
----- Fields in struct ----
-+----+------------------+-----------+-----------+
-| ID |    FIELDTYPE     | FIELDNAME | FIELDSIZE |
-+----+------------------+-----------+-----------+
-| A  | int64            | capacity  | 8         |
-| B  | int64            | head      | 8         |
-| C  | int64            | tail      | 8         |
-| D  | int64            | count     | 8         |
-| E  | []unsafe.Pointer | data      | 24        |
-+----+------------------+-----------+-----------+
----- Memory layout ----
-|A|A|A|A|A|A|A|A|
-|B|B|B|B|B|B|B|B|
-|C|C|C|C|C|C|C|C|
-|D|D|D|D|D|D|D|D|
-|E|E|E|E|E|E|E|E|
-|E|E|E|E|E|E|E|E|
-|E|E|E|E|E|E|E|E|
-
-total cost: 56 Bytes.
+total cost: 32 Bytes.
 ```
 
 # 快速入门
