@@ -12,9 +12,9 @@ import (
 // DefaultCircleBufferSize is the default size of the ring buffer
 const DefaultCircleBufferSize = 1024
 
-// LockFreeRingBuffer 是一个无锁环形缓冲区的结构体
-// LockFreeRingBuffer is a structure of a lock-free ring buffer
-type LockFreeRingBuffer struct {
+// rbufferImpl 是一个无锁环形缓冲区的结构体
+// rbufferImpl is a structure of a lock-free ring buffer
+type rbufferImpl struct {
 	// capacity 是环形缓冲区的容量
 	// capacity is the capacity of the ring buffer
 	capacity int64
@@ -38,7 +38,7 @@ type LockFreeRingBuffer struct {
 
 // New 是一个函数，用于创建一个新的 LockFreeRingBuffer 实例
 // New is a function that creates a new instance of LockFreeRingBuffer
-func New(capacity int) *LockFreeRingBuffer {
+func New(capacity int) RingBuffer {
 	// 如果传入的容量小于或等于 0，那么将容量设置为默认的环形缓冲区大小
 	// If the passed in capacity is less than or equal to 0, then set the capacity to the default ring buffer size
 	if capacity <= 0 {
@@ -47,7 +47,7 @@ func New(capacity int) *LockFreeRingBuffer {
 
 	// 创建一个新的 LockFreeRingBuffer 实例
 	// Create a new instance of LockFreeRingBuffer
-	rb := &LockFreeRingBuffer{
+	rb := &rbufferImpl{
 		// 使用 make 函数创建一个长度和容量都为 capacity 的切片
 		// Create a slice with length and capacity both equal to capacity using the make function
 		data: make([]unsafe.Pointer, capacity),
@@ -82,31 +82,31 @@ func New(capacity int) *LockFreeRingBuffer {
 
 // IsEmpty 是一个方法，用于检查环形缓冲区是否为空
 // IsEmpty is a method that checks whether the ring buffer is empty
-func (r *LockFreeRingBuffer) IsEmpty() bool {
+func (r *rbufferImpl) IsEmpty() bool {
 	return r.Count() == 0
 }
 
 // IsFull 是一个方法，用于检查环形缓冲区是否已满
 // IsFull is a method that checks whether the ring buffer is full
-func (r *LockFreeRingBuffer) IsFull() bool {
+func (r *rbufferImpl) IsFull() bool {
 	return r.Count() == r.capacity
 }
 
 // Capacity 是一个方法，返回环形缓冲区的容量
 // Capacity is a method that returns the capacity of the ring buffer
-func (r *LockFreeRingBuffer) Capacity() int64 {
+func (r *rbufferImpl) Capacity() int64 {
 	return r.capacity
 }
 
 // Count 是一个方法，返回环形缓冲区中的元素数量
 // Count is a method that returns the number of elements in the ring buffer
-func (r *LockFreeRingBuffer) Count() int64 {
+func (r *rbufferImpl) Count() int64 {
 	return r.count
 }
 
 // Reset 是一个方法，用于重置环形缓冲区
 // Reset is a method that resets the ring buffer
-func (r *LockFreeRingBuffer) Reset() {
+func (r *rbufferImpl) Reset() {
 	// 使用 for 循环遍历环形缓冲区的每个元素
 	// Use a for loop to traverse each element of the ring buffer
 	for i := int64(0); i < r.capacity; i++ {
@@ -132,7 +132,7 @@ func (r *LockFreeRingBuffer) Reset() {
 
 // Push 方法用于向无锁环形缓冲区中推入一个元素
 // The Push method is used to push an element into the lock-free ring buffer
-func (r *LockFreeRingBuffer) Push(value interface{}) bool {
+func (r *rbufferImpl) Push(value interface{}) bool {
 	// 使用无限循环，直到成功推入元素
 	// Use an infinite loop until an element is successfully pushed
 	for {
@@ -156,7 +156,7 @@ func (r *LockFreeRingBuffer) Push(value interface{}) bool {
 
 		// 使用 CAS 操作尝试修改尾部元素的位置, 并且尾部元素的指针不为空
 		// Use CAS operation to try to modify the position of the tail element, and the pointer of the tail element is not null
-		if atomic.CompareAndSwapInt64(&r.tail, tail, next) && ptr != unsafe.Pointer(nil) {
+		if shd.CompareAndSwapInt64(&r.tail, tail, next) && ptr != unsafe.Pointer(nil) {
 			// 缓冲区的元素数量加 1
 			// The number of elements in the buffer is increased by 1
 			atomic.AddInt64(&r.count, 1)
@@ -178,7 +178,7 @@ func (r *LockFreeRingBuffer) Push(value interface{}) bool {
 
 // Pop 方法用于从无锁环形缓冲区中弹出一个元素
 // The Pop method is used to pop an element from the lock-free ring buffer
-func (r *LockFreeRingBuffer) Pop() (interface{}, bool) {
+func (r *rbufferImpl) Pop() (interface{}, bool) {
 	// 使用无限循环，直到成功弹出元素
 	// Use an infinite loop until an element is successfully popped
 	for {
@@ -202,7 +202,7 @@ func (r *LockFreeRingBuffer) Pop() (interface{}, bool) {
 
 		// 使用 CAS 操作尝试修改头部元素的位置，并且头部元素的指针不为空
 		// Use CAS operation to try to modify the position of the head element, and the pointer of the head element is not null
-		if atomic.CompareAndSwapInt64(&r.head, head, next) && ptr != unsafe.Pointer(nil) {
+		if shd.CompareAndSwapInt64(&r.head, head, next) && ptr != unsafe.Pointer(nil) {
 			// 如果成功修改，缓冲区的元素数量减 1
 			// If the modification is successful, the number of elements in the buffer is reduced by 1
 			atomic.AddInt64(&r.count, -1)

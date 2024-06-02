@@ -55,71 +55,24 @@ go get github.com/shengyanli1982/lockfree
 
 ### 结构体内存对齐
 
-**1. 队列**
+本质上，内存对齐可以提高性能，减少 CPU 周期，降低功耗，增强稳定性，并确保行为的可预测性。这就是为什么在内存中对齐数据被视为最佳实践，特别是在现代的 64 位 CPU 上。
 
 ```bash
-Queue alignment:
+Node struct alignment::
 
 ---- Fields in struct ----
 +----+----------------+-----------+-----------+
 | ID |   FIELDTYPE    | FIELDNAME | FIELDSIZE |
 +----+----------------+-----------+-----------+
-| A  | int64          | length    | 8         |
-| B  | unsafe.Pointer | head      | 8         |
-| C  | unsafe.Pointer | tail      | 8         |
+| A  | unsafe.Pointer | Next      | 8         |
+| B  | interface {}   | Value     | 16        |
 +----+----------------+-----------+-----------+
 ---- Memory layout ----
 |A|A|A|A|A|A|A|A|
 |B|B|B|B|B|B|B|B|
-|C|C|C|C|C|C|C|C|
+|B|B|B|B|B|B|B|B|
 
 total cost: 24 Bytes.
-```
-
-**2. 栈**
-
-```bash
-Stack alignment:
-
----- Fields in struct ----
-+----+----------------+-----------+-----------+
-| ID |   FIELDTYPE    | FIELDNAME | FIELDSIZE |
-+----+----------------+-----------+-----------+
-| A  | int64          | length    | 8         |
-| B  | unsafe.Pointer | top       | 8         |
-+----+----------------+-----------+-----------+
----- Memory layout ----
-|A|A|A|A|A|A|A|A|
-|B|B|B|B|B|B|B|B|
-
-total cost: 16 Bytes.
-```
-
-**3. 环形缓冲区**
-
-```bash
-RingBuffer alignment:
-
----- Fields in struct ----
-+----+------------------+-----------+-----------+
-| ID |    FIELDTYPE     | FIELDNAME | FIELDSIZE |
-+----+------------------+-----------+-----------+
-| A  | int64            | capacity  | 8         |
-| B  | int64            | head      | 8         |
-| C  | int64            | tail      | 8         |
-| D  | int64            | count     | 8         |
-| E  | []unsafe.Pointer | data      | 24        |
-+----+------------------+-----------+-----------+
----- Memory layout ----
-|A|A|A|A|A|A|A|A|
-|B|B|B|B|B|B|B|B|
-|C|C|C|C|C|C|C|C|
-|D|D|D|D|D|D|D|D|
-|E|E|E|E|E|E|E|E|
-|E|E|E|E|E|E|E|E|
-|E|E|E|E|E|E|E|E|
-
-total cost: 56 Bytes.
 ```
 
 # 快速入门

@@ -55,71 +55,24 @@ The following benchmark results show the performance of the `lockfree` library c
 
 ### Struct Memory Alignment
 
-**1. Queue**
+In essence, memory alignment enhances performance, minimizes CPU cycles, reduces power usage, boosts stability, and ensures predictable behavior. This is why it's considered a best practice to align data in memory, especially on contemporary 64-bit CPUs.
 
 ```bash
-Queue alignment:
+Node struct alignment::
 
 ---- Fields in struct ----
 +----+----------------+-----------+-----------+
 | ID |   FIELDTYPE    | FIELDNAME | FIELDSIZE |
 +----+----------------+-----------+-----------+
-| A  | int64          | length    | 8         |
-| B  | unsafe.Pointer | head      | 8         |
-| C  | unsafe.Pointer | tail      | 8         |
+| A  | unsafe.Pointer | Next      | 8         |
+| B  | interface {}   | Value     | 16        |
 +----+----------------+-----------+-----------+
 ---- Memory layout ----
 |A|A|A|A|A|A|A|A|
 |B|B|B|B|B|B|B|B|
-|C|C|C|C|C|C|C|C|
+|B|B|B|B|B|B|B|B|
 
 total cost: 24 Bytes.
-```
-
-**2. Stack**
-
-```bash
-Stack alignment:
-
----- Fields in struct ----
-+----+----------------+-----------+-----------+
-| ID |   FIELDTYPE    | FIELDNAME | FIELDSIZE |
-+----+----------------+-----------+-----------+
-| A  | int64          | length    | 8         |
-| B  | unsafe.Pointer | top       | 8         |
-+----+----------------+-----------+-----------+
----- Memory layout ----
-|A|A|A|A|A|A|A|A|
-|B|B|B|B|B|B|B|B|
-
-total cost: 16 Bytes.
-```
-
-**3. RingBuffer**
-
-```bash
-RingBuffer alignment:
-
----- Fields in struct ----
-+----+------------------+-----------+-----------+
-| ID |    FIELDTYPE     | FIELDNAME | FIELDSIZE |
-+----+------------------+-----------+-----------+
-| A  | int64            | capacity  | 8         |
-| B  | int64            | head      | 8         |
-| C  | int64            | tail      | 8         |
-| D  | int64            | count     | 8         |
-| E  | []unsafe.Pointer | data      | 24        |
-+----+------------------+-----------+-----------+
----- Memory layout ----
-|A|A|A|A|A|A|A|A|
-|B|B|B|B|B|B|B|B|
-|C|C|C|C|C|C|C|C|
-|D|D|D|D|D|D|D|D|
-|E|E|E|E|E|E|E|E|
-|E|E|E|E|E|E|E|E|
-|E|E|E|E|E|E|E|E|
-
-total cost: 56 Bytes.
 ```
 
 # Quick Start

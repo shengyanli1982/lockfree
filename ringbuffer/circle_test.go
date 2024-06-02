@@ -67,7 +67,7 @@ func TestLockFreeRingBuffer_Count(t *testing.T) {
 }
 
 func TestLockFreeRingBuffer_Reset(t *testing.T) {
-	r := New(5) // Replace with your desired capacity
+	r := New(5).(*rbufferImpl) // Replace with your desired capacity
 
 	// Push values into the ring buffer
 	for i := 0; i < 5; i++ {

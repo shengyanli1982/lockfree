@@ -8,9 +8,9 @@ import (
 	shd "github.com/shengyanli1982/lockfree/internal/shared"
 )
 
-// LockFreeQueue 是一个无锁队列结构体
-// LockFreeQueue is a lock-free queue struct
-type LockFreeQueue struct {
+// queueImpl 是一个无锁队列结构体
+// queueImpl is a lock-free queue struct
+type queueImpl struct {
 	// length 是队列的长度
 	// length is the length of the queue
 	length int64
@@ -26,14 +26,14 @@ type LockFreeQueue struct {
 
 // New 函数用于创建一个新的 LockFreeQueue 结构体实例
 // The New function is used to create a new instance of the LockFreeQueue struct
-func New() *LockFreeQueue {
+func New() Queue {
 	// 创建一个新的 Node 结构体实例
 	// Create a new Node struct instance
 	emptyNode := shd.NewNode(nil)
 
 	// 返回一个新的 LockFreeQueue 结构体实例，其中 head 和 tail 都指向 EmptyNode 节点
 	// Returns a new instance of the LockFreeQueue struct, where both head and tail point to the dummy node
-	return &LockFreeQueue{
+	return &queueImpl{
 		head: unsafe.Pointer(emptyNode),
 		tail: unsafe.Pointer(emptyNode),
 	}
@@ -41,7 +41,7 @@ func New() *LockFreeQueue {
 
 // Push 方法用于将一个值添加到 LockFreeQueue 队列的末尾
 // The Push method is used to add a value to the end of the LockFreeQueue queue
-func (q *LockFreeQueue) Push(value interface{}) {
+func (q *queueImpl) Push(value interface{}) {
 	// 检查值是否为空, 如果为空则直接返回
 	// Check if the value is nil, if it is, return directly
 	if value == nil {
@@ -111,7 +111,7 @@ func (q *LockFreeQueue) Push(value interface{}) {
 
 // Pop 方法用于从 LockFreeQueue 队列的头部移除并返回一个值
 // The Pop method is used to remove and return a value from the head of the LockFreeQueue queue
-func (q *LockFreeQueue) Pop() interface{} {
+func (q *queueImpl) Pop() interface{} {
 	// 使用无限循环来尝试从队列的头部移除一个值
 	// Use an infinite loop to try to remove a value from the head of the queue
 	for {
@@ -181,7 +181,7 @@ func (q *LockFreeQueue) Pop() interface{} {
 
 // Length 方法用于获取 LockFreeQueue 队列的长度
 // The Length method is used to get the length of the LockFreeQueue queue
-func (q *LockFreeQueue) Length() int64 {
+func (q *queueImpl) Length() int64 {
 	// 使用 atomic.Loadint64 函数获取队列的长度
 	// Use the atomic.Loadint64 function to get the length of the queue
 	return atomic.LoadInt64(&q.length)
@@ -189,7 +189,7 @@ func (q *LockFreeQueue) Length() int64 {
 
 // IsEmpty 方法用于判断 LockFreeQueue 队列是否为空
 // The IsEmpty method is used to determine whether the LockFreeQueue queue is empty
-func (q *LockFreeQueue) IsEmpty() bool {
+func (q *queueImpl) IsEmpty() bool {
 	// 使用 Length 方法获取队列的长度，如果长度为 0，那么队列为空
 	// Use the Length method to get the length of the queue, if the length is 0, then the queue is empty
 	return q.Length() == 0
@@ -197,7 +197,7 @@ func (q *LockFreeQueue) IsEmpty() bool {
 
 // Reset 方法用于重置 LockFreeQueue 队列
 // The Reset method is used to reset the LockFreeQueue queue
-func (q *LockFreeQueue) Reset() {
+func (q *queueImpl) Reset() {
 	// 创建一个新的 Node 结构体实例
 	// Create a new Node struct instance
 	emptyNode := shd.NewNode(nil)

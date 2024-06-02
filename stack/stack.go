@@ -8,9 +8,9 @@ import (
 	shd "github.com/shengyanli1982/lockfree/internal/shared"
 )
 
-// LockFreeStack 是一个无锁栈的结构体
-// LockFreeStack is a structure of a lock-free stack
-type LockFreeStack struct {
+// stackImpl 是一个无锁栈的结构体
+// stackImpl is a structure of a lock-free stack
+type stackImpl struct {
 	// length 是栈的长度
 	// length is the length of the stack
 	length int64
@@ -22,17 +22,17 @@ type LockFreeStack struct {
 
 // New 函数用于创建一个新的无锁栈
 // The New function is used to create a new lock-free stack
-func New() *LockFreeStack {
+func New() Stack {
 	// 返回一个新的 LockFreeStack，栈顶元素为空节点
 	// Return a new LockFreeStack with the top element as an empty node
-	return &LockFreeStack{
+	return &stackImpl{
 		top: unsafe.Pointer(shd.NewNode(nil)),
 	}
 }
 
 // Push 方法用于向无锁栈中推入一个元素
 // The Push method is used to push an element into the lock-free stack
-func (s *LockFreeStack) Push(value interface{}) {
+func (s *stackImpl) Push(value interface{}) {
 	// 检查值是否为空, 如果为空则直接返回
 	// Check if the value is nil, if it is, return directly
 	if value == nil {
@@ -74,7 +74,7 @@ func (s *LockFreeStack) Push(value interface{}) {
 
 // Pop 方法用于从无锁栈中弹出一个元素
 // The Pop method is used to pop an element from the lock-free stack
-func (s *LockFreeStack) Pop() interface{} {
+func (s *stackImpl) Pop() interface{} {
 	// 使用无限循环，直到成功弹出元素
 	// Use an infinite loop until an element is successfully popped
 	for {
@@ -124,7 +124,7 @@ func (s *LockFreeStack) Pop() interface{} {
 
 // Length 方法用于获取 LockFreeQueue 队列的长度
 // The Length method is used to get the length of the LockFreeQueue queue
-func (s *LockFreeStack) Length() int64 {
+func (s *stackImpl) Length() int64 {
 	// 使用 atomic.Loadint64 函数获取队列的长度
 	// Use the atomic.Loadint64 function to get the length of the queue
 	return atomic.LoadInt64(&s.length)
@@ -132,7 +132,7 @@ func (s *LockFreeStack) Length() int64 {
 
 // IsEmpty 方法用于判断 LockFreeStack 栈是否为空
 // The IsEmpty method is used to determine whether the LockFreeStack stack is empty
-func (s *LockFreeStack) IsEmpty() bool {
+func (s *stackImpl) IsEmpty() bool {
 	// 使用 Length 方法获取栈的长度，如果长度为 0，那么栈为空
 	// Use the Length method to get the length of the stack, if the length is 0, then the stack is empty
 	return s.Length() == 0
@@ -140,10 +140,10 @@ func (s *LockFreeStack) IsEmpty() bool {
 
 // Reset 方法用于重置 LockFreeQueue 队列
 // The Reset method is used to reset the LockFreeQueue queue
-func (s *LockFreeStack) Reset() {
+func (s *stackImpl) Reset() {
 	// 将队列的头节点和尾节点都设置为新创建的节点
 	// Set both the head node and the tail node of the queue to the newly created node
-	s.top = unsafe.Pointer(shd.NewNode(nil))
+	shd.SetNode(&s.top, shd.NewNode(nil))
 
 	// 使用 atomic.Storeint64 函数将队列的长度设置为 0
 	// Use the atomic.Storeint64 function to set the length of the queue to 0
