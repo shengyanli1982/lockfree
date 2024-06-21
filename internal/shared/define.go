@@ -1,6 +1,7 @@
 package shared
 
 import (
+	"sync"
 	"unsafe"
 )
 
@@ -41,4 +42,50 @@ func (n *Node) ResetAll() {
 	// 将 next 字段设置为 nil
 	// Set the next field to nil
 	n.Next = nil
+}
+
+// NodePool 结构体用于表示一个节点池
+// The NodePool struct is used to represent a node pool
+type NodePool struct {
+	// pool 是一个同步池，用于存储和获取节点
+	// pool is a sync pool, used to store and retrieve nodes
+	pool *sync.Pool
+}
+
+// NewNodePool 函数用于创建一个新的节点池
+// The NewNodePool function is used to create a new node pool
+func NewNodePool() *NodePool {
+	return &NodePool{
+		// 创建一个新的同步池，当池中没有可用的节点时，会调用 New 方法创建一个新的节点
+		// Create a new sync pool, when there are no available nodes in the pool, the New method will be called to create a new node
+		pool: &sync.Pool{
+			New: func() interface{} {
+				return NewNode(nil)
+			},
+		},
+	}
+}
+
+// Get 方法用于从节点池中获取一个节点
+// The Get method is used to get a node from the node pool
+func (np *NodePool) Get() *Node {
+	// 使用 sync.Pool 的 Get 方法获取一个节点，然后将其转换为 *Node 类型
+	// Use the Get method of sync.Pool to get a node, and then convert it to *Node type
+	return np.pool.Get().(*Node)
+}
+
+// Put 方法用于将一个节点放回节点池
+// The Put method is used to put a node back into the node pool
+func (np *NodePool) Put(n *Node) {
+	// 如果节点不为 nil
+	// If the node is not nil
+	if n != nil {
+		// 重置节点，包括其值、下一个节点和索引
+		// Reset the node, including its value, next node, and index
+		n.ResetAll()
+
+		// 使用 sync.Pool 的 Put 方法将节点放回池中
+		// Use the Put method of sync.Pool to put the node back into the pool
+		np.pool.Put(n)
+	}
 }

@@ -126,7 +126,7 @@ func BenchmarkLockFreeRingBuffer(b *testing.B) {
 }
 
 func BenchmarkLockFreeRingBufferParallel(b *testing.B) {
-	r := ringbuffer.New(5)
+	r := ringbuffer.New(b.N)
 	b.ResetTimer()
 
 	b.RunParallel(func(pb *testing.PB) {

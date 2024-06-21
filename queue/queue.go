@@ -21,18 +21,39 @@ type LockFreeQueue struct {
 	// tail 是指向队列尾部的指针
 	// tail is a pointer to the tail of the queue
 	tail unsafe.Pointer
+
+	// pool 是一个节点池，用于存储和获取节点
+	// pool is a node pool used to store and retrieve nodes
+	pool *shd.NodePool
 }
 
-// New 函数用于创建一个新的 LockFreeQueue 结构体实例
-// The New function is used to create a new instance of the LockFreeQueue struct
+// New 函数用于创建一个新的 LockFreeQueue 队列
+// The New function is used to create a new LockFreeQueue queue
 func New() *LockFreeQueue {
-	// 创建一个新的 Node 结构体实例
-	// Create a new Node struct instance
+	// 调用 newLFQ 函数创建一个新的 LockFreeQueue 队列，参数为 nil
+	// Call the newLFQ function to create a new LockFreeQueue queue, the parameter is nil
+	return newLFQ(nil)
+}
+
+// NewWithPool 函数用于创建一个新的 LockFreeQueue 队列，该队列使用一个节点池
+// The NewWithPool function is used to create a new LockFreeQueue queue, this queue uses a node pool
+func NewWithPool() *LockFreeQueue {
+	// 调用 newLFQ 函数创建一个新的 LockFreeQueue 队列，参数为一个新的节点池
+	// Call the newLFQ function to create a new LockFreeQueue queue, the parameter is a new node pool
+	return newLFQ(shd.NewNodePool())
+}
+
+// newLFQ 函数用于创建一个新的 LockFreeQueue 队列，参数为一个节点池
+// The newLFQ function is used to create a new LockFreeQueue queue, the parameter is a node pool
+func newLFQ(pool *shd.NodePool) *LockFreeQueue {
+	// 创建一个新的 Node 结构体实例，值为 nil
+	// Create a new Node struct instance, the value is nil
 	fristNode := shd.NewNode(nil)
 
-	// 返回一个新的 LockFreeQueue 结构体实例，其中 head 和 tail 都指向 EmptyNode 节点
-	// Returns a new instance of the LockFreeQueue struct, where both head and tail point to the dummy node
+	// 返回一个新的 LockFreeQueue 队列，该队列的头节点和尾节点都是刚刚创建的节点，节点池为传入的参数
+	// Return a new LockFreeQueue queue, the head node and tail node of this queue are the nodes just created, and the node pool is the passed in parameter
 	return &LockFreeQueue{
+		pool: pool,
 		head: unsafe.Pointer(fristNode),
 		tail: unsafe.Pointer(fristNode),
 	}
@@ -49,7 +70,17 @@ func (q *LockFreeQueue) Push(value interface{}) {
 
 	// 创建一个新的 Node 结构体实例
 	// Create a new Node struct instance
-	node := shd.NewNode(value)
+	var node *shd.Node
+	if q.pool != nil {
+		// 如果节点池不为空，那么从节点池中获取一个节点
+		// If the node pool is not nil, then get a node from the node pool
+		node = q.pool.Get()
+		node.Value = value
+	} else {
+		// 如果节点池为空，那么创建一个新的节点
+		// If the node pool is nil, then create a new node
+		node = shd.NewNode(value)
+	}
 
 	// 使用无限循环来尝试将新节点添加到队列的末尾
 	// Use an infinite loop to try to add the new node to the end of the queue
@@ -137,9 +168,15 @@ func (q *LockFreeQueue) Pop() interface{} {
 					// If successful, then decrease the length of the queue
 					atomic.AddInt64(&q.length, -1)
 
-					// 然后重置头节点，包括其值、下一个节点和索引
-					// Then reset the head node, including its value, next node, and index
-					head.ResetAll()
+					// 如果节点池不为空，那么将头节点放回节点池
+					// If the node pool is not nil, then put the head node back into the node pool
+					if q.pool != nil {
+						q.pool.Put(head)
+					} else {
+						// 如果节点池为空，那么重置头节点
+						// If the node pool is nil, then reset the head node
+						head.ResetAll()
+					}
 
 					// 返回头节点的值，表示成功从队列中弹出一个元素
 					// Return the value of the head node, indicating that an element has been successfully popped from the queue

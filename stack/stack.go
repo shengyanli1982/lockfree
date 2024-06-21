@@ -17,15 +17,40 @@ type LockFreeStack struct {
 	// top 是栈顶元素的指针
 	// top is a pointer to the top element of the stack
 	top unsafe.Pointer
+
+	// pool 是一个节点池，用于存储和获取节点
+	// pool is a node pool used to store and retrieve nodes
+	pool *shd.NodePool
 }
 
 // New 函数用于创建一个新的无锁栈
 // The New function is used to create a new lock-free stack
 func New() *LockFreeStack {
-	// 返回一个新的 LockFreeStack，栈顶元素为空节点
-	// Return a new LockFreeStack with the top element as an empty node
+	// 调用 newLFS 函数创建一个新的 LockFreeStack 栈，参数为 nil
+	// Call the newLFS function to create a new LockFreeStack stack, the parameter is nil
+	return newLFS(nil)
+}
+
+// NewWithPool 函数用于创建一个新的 LockFreeStack 栈，该栈使用一个节点池
+// The NewWithPool function is used to create a new LockFreeStack stack, this stack uses a node pool
+func NewWithPool() *LockFreeStack {
+	// 调用 newLFS 函数创建一个新的 LockFreeStack 栈，参数为一个新的节点池
+	// Call the newLFS function to create a new LockFreeStack stack, the parameter is a new node pool
+	return newLFS(shd.NewNodePool())
+}
+
+// newLFS 函数用于创建一个新的 LockFreeStack 栈，参数为一个节点池
+// The newLFS function is used to create a new LockFreeStack stack, the parameter is a node pool
+func newLFS(pool *shd.NodePool) *LockFreeStack {
+	// 创建一个新的 Node 结构体实例，值为 nil
+	// Create a new Node struct instance, the value is nil
+	firstNode := shd.NewNode(nil)
+
+	// 返回一个新的 LockFreeStack 栈，该栈的顶部节点是刚刚创建的节点，节点池为传入的参数
+	// Return a new LockFreeStack stack, the top node of this stack is the node just created, and the node pool is the passed in parameter
 	return &LockFreeStack{
-		top: unsafe.Pointer(shd.NewNode(nil)),
+		pool: pool,
+		top:  unsafe.Pointer(firstNode),
 	}
 }
 
@@ -38,9 +63,19 @@ func (s *LockFreeStack) Push(value interface{}) {
 		return
 	}
 
-	// 创建一个新的节点
-	// Create a new node
-	node := shd.NewNode(value)
+	// 创建一个新的 Node 结构体实例
+	// Create a new Node struct instance
+	var node *shd.Node
+	if s.pool != nil {
+		// 如果节点池不为空，那么从节点池中获取一个节点
+		// If the node pool is not nil, then get a node from the node pool
+		node = s.pool.Get()
+		node.Value = value
+	} else {
+		// 如果节点池为空，那么创建一个新的节点
+		// If the node pool is nil, then create a new node
+		node = shd.NewNode(value)
+	}
 
 	// 使用无限循环，直到成功推入元素
 	// Use an infinite loop until an element is successfully pushed
@@ -101,9 +136,15 @@ func (s *LockFreeStack) Pop() interface{} {
 				// If the modification is successful, the length of the stack is reduced by 1
 				atomic.AddInt64(&s.length, -1)
 
-				// 重置原栈顶元素
-				// Reset the original top element
-				top.ResetAll()
+				// 如果节点池不为空，那么将栈顶元素放回节点池
+				// If the node pool is not nil, then put the top element back into the node pool
+				if s.pool != nil {
+					s.pool.Put(top)
+				} else {
+					// 如果节点池为空，那么重置栈顶元素
+					// If the node pool is nil, then reset the top element
+					top.ResetAll()
+				}
 
 				// 如果结果不是空值，返回结果
 				// If the result is not an empty value, return the result

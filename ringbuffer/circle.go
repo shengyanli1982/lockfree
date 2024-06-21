@@ -100,7 +100,7 @@ func (r *LockFreeRingBuffer) Capacity() int64 {
 // Count 是一个方法，返回环形缓冲区中的元素数量
 // Count is a method that returns the number of elements in the ring buffer
 func (r *LockFreeRingBuffer) Count() int64 {
-	return r.count
+	return atomic.LoadInt64(&r.count)
 }
 
 // Reset 是一个方法，用于重置环形缓冲区
