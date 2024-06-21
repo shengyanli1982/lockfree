@@ -1,7 +1,6 @@
 package stack
 
 import (
-	"runtime"
 	"sync/atomic"
 	"unsafe"
 
@@ -64,10 +63,6 @@ func (s *LockFreeStack) Push(value interface{}) {
 			// 结束循环
 			// End the loop
 			return
-		} else {
-			// 如果 CAS 操作失败，调用 runtime.Gosched 函数让出当前线程的执行权限
-			// If the CAS operation fails, call the runtime.Gosched function to yield the execution permission of the current thread
-			runtime.Gosched()
 		}
 	}
 }
@@ -113,10 +108,6 @@ func (s *LockFreeStack) Pop() interface{} {
 				// 如果结果不是空值，返回结果
 				// If the result is not an empty value, return the result
 				return result
-			} else {
-				// 如果 CAS 操作失败，调用 runtime.Gosched 函数让出当前线程的执行权限
-				// If the CAS operation fails, call the runtime.Gosched function to yield the execution permission of the current thread
-				runtime.Gosched()
 			}
 		}
 	}
