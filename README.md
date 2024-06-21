@@ -42,84 +42,48 @@ go get github.com/shengyanli1982/lockfree
 
 The following benchmark results show the performance of the `lockfree` library compared to the standard `channel` package in Go.
 
-| Benchmark                             | Operations | Time/op     | Bytes/op | Allocs/op   |
-| ------------------------------------- | ---------- | ----------- | -------- | ----------- |
-| BenchmarkStdChannel-8                 | 15,357,115 | 81.55 ns/op | 0 B/op   | 0 allocs/op |
-| BenchmarkStdChannelParallel-8         | 10,393,086 | 116.2 ns/op | 0 B/op   | 0 allocs/op |
-| BenchmarkLockFreeQueue-8              | 8,799,632  | 126.2 ns/op | 31 B/op  | 1 allocs/op |
-| BenchmarkLockFreeQueueParallel-8      | 6,817,446  | 174.0 ns/op | 24 B/op  | 1 allocs/op |
-| BenchmarkLockFreeStack-8              | 9,490,305  | 108.8 ns/op | 31 B/op  | 1 allocs/op |
-| BenchmarkLockFreeStackParallel-8      | 8,942,202  | 134.4 ns/op | 24 B/op  | 1 allocs/op |
-| BenchmarkLockFreeRingBuffer-8         | 12,610,683 | 114.7 ns/op | 20 B/op  | 2 allocs/op |
-| BenchmarkLockFreeRingBufferParallel-8 | 6,104,230  | 199.1 ns/op | 21 B/op  | 2 allocs/op |
+| Benchmark                              | Iterations | Time per Operation (ns/op) | Memory per Operation (B/op) | Allocations per Operation (allocs/op) |
+| -------------------------------------- | ---------- | -------------------------- | --------------------------- | ------------------------------------- |
+| BenchmarkStdChannel-12                 | 15281919   | 74.44                      | 0                           | 0                                     |
+| BenchmarkStdChannelParallel-12         | 2480110    | 472.2                      | 0                           | 0                                     |
+| BenchmarkLockFreeQueue-12              | 8987360    | 130.7                      | 39                          | 1                                     |
+| BenchmarkLockFreeQueueParallel-12      | 6177157    | 205.7                      | 32                          | 1                                     |
+| BenchmarkLockFreeStack-12              | 7196250    | 149.6                      | 39                          | 1                                     |
+| BenchmarkLockFreeStackParallel-12      | 5118580    | 235.1                      | 32                          | 1                                     |
+| BenchmarkLockFreeRingBuffer-12         | 12354180   | 133.0                      | 23                          | 2                                     |
+| BenchmarkLockFreeRingBufferParallel-12 | 4267166    | 287.2                      | 56                          | 7                                     |
+
+**System Information:**
+
+-   **goos**: darwin
+-   **goarch**: amd64
+-   **pkg**: github.com/shengyanli1982/lockfree/benchmark
+-   **cpu**: Intel(R) Xeon(R) CPU E5-2643 v2 @ 3.50GHz
 
 ### Struct Memory Alignment
 
-**1. Queue**
+**Node struct**
+
+To optimize memory access and performance, `Node` objects in the `lockfree` library are aligned to 32 bytes. This is because Go uses 8-byte alignment on 64-bit systems.
 
 ```bash
-Queue alignment:
+Node alignment:
 
 ---- Fields in struct ----
 +----+----------------+-----------+-----------+
 | ID |   FIELDTYPE    | FIELDNAME | FIELDSIZE |
 +----+----------------+-----------+-----------+
-| A  | int64          | length    | 8         |
-| B  | unsafe.Pointer | head      | 8         |
-| C  | unsafe.Pointer | tail      | 8         |
+| A  | interface {}   | Value     | 16        |
+| B  | unsafe.Pointer | Next      | 8         |
+| C  | int64          | _         | 8         |
 +----+----------------+-----------+-----------+
 ---- Memory layout ----
+|A|A|A|A|A|A|A|A|
 |A|A|A|A|A|A|A|A|
 |B|B|B|B|B|B|B|B|
 |C|C|C|C|C|C|C|C|
 
-total cost: 24 Bytes.
-```
-
-**2. Stack**
-
-```bash
-Stack alignment:
-
----- Fields in struct ----
-+----+----------------+-----------+-----------+
-| ID |   FIELDTYPE    | FIELDNAME | FIELDSIZE |
-+----+----------------+-----------+-----------+
-| A  | int64          | length    | 8         |
-| B  | unsafe.Pointer | top       | 8         |
-+----+----------------+-----------+-----------+
----- Memory layout ----
-|A|A|A|A|A|A|A|A|
-|B|B|B|B|B|B|B|B|
-
-total cost: 16 Bytes.
-```
-
-**3. RingBuffer**
-
-```bash
-RingBuffer alignment:
-
----- Fields in struct ----
-+----+------------------+-----------+-----------+
-| ID |    FIELDTYPE     | FIELDNAME | FIELDSIZE |
-+----+------------------+-----------+-----------+
-| A  | int64            | capacity  | 8         |
-| B  | int64            | head      | 8         |
-| C  | int64            | tail      | 8         |
-| D  | int64            | count     | 8         |
-| E  | []unsafe.Pointer | data      | 24        |
-+----+------------------+-----------+-----------+
----- Memory layout ----
-|A|A|A|A|A|A|A|A|
-|B|B|B|B|B|B|B|B|
-|C|C|C|C|C|C|C|C|
-|D|D|D|D|D|D|D|D|
-|E|E|E|E|E|E|E|E|
-|E|E|E|E|E|E|E|E|
-|E|E|E|E|E|E|E|E|
-
-total cost: 56 Bytes.
+total cost: 32 Bytes.
 ```
 
 # Quick Start

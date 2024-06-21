@@ -1,7 +1,6 @@
 package ringbuffer
 
 import (
-	"runtime"
 	"sync/atomic"
 	"unsafe"
 
@@ -72,7 +71,7 @@ func New(capacity int) *LockFreeRingBuffer {
 	// 使用 for 循环初始化环形缓冲区的每个元素为一个新的节点，节点的值为 EmptyValue
 	// Use a for loop to initialize each element of the ring buffer to a new node with a value of EmptyValue
 	for i := 0; i < capacity; i++ {
-		rb.data[i] = unsafe.Pointer(shd.NewNode(shd.EmptyValue))
+		rb.data[i] = unsafe.Pointer(shd.NewNode(nil))
 	}
 
 	// 返回新创建的 LockFreeRingBuffer 实例
@@ -168,10 +167,6 @@ func (r *LockFreeRingBuffer) Push(value interface{}) bool {
 			// 返回 true，表示成功推入元素
 			// Return true, indicating that the element was successfully pushed
 			return true
-		} else {
-			// 如果 CAS 操作失败，调用 runtime.Gosched 函数让出当前线程的执行权限
-			// If the CAS operation fails, call the runtime.Gosched function to yield the execution permission of the current thread
-			runtime.Gosched()
 		}
 	}
 }
@@ -222,10 +217,6 @@ func (r *LockFreeRingBuffer) Pop() (interface{}, bool) {
 			// 返回节点的值和 true
 			// Return the value of the node and true
 			return value, true
-		} else {
-			// 如果 CAS 操作失败，调用 runtime.Gosched 函数让出当前线程的执行权限
-			// If the CAS operation fails, call the runtime.Gosched function to yield the execution permission of the current thread
-			runtime.Gosched()
 		}
 	}
 }
