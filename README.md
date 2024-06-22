@@ -94,6 +94,11 @@ total cost: 32 Bytes.
 
 The `LockFreeQueue` is a thread-safe and lock-free `fifo` data structure. It offers basic operations without support for delaying, priority, timeout, or blocking operations. It is designed to be very simple.
 
+### Create
+
+-   `New`: Create a new queue
+-   `NewWithPool`: Create a new queue with a memory pool
+
 ### Methods
 
 -   `Push`: Pushes an element into the queue
@@ -164,6 +169,11 @@ $ go run demo.go
 
 The `LockFreeStack` is a thread-safe and lock-free `lifo` data structure. It provides simple methods for pushing and popping elements, as well as getting the length and checking if the stack is empty.
 
+### Create
+
+-   `New`: Create a new stack
+-   `NewWithPool`: Create a new stack with a memory pool
+
 ### Methods
 
 -   `Push`: Pushes an element onto the stack
@@ -233,6 +243,10 @@ $ go run demo.go
 ## 3. RingBuffer
 
 The `LockFreeRingBuffer` is a thread-safe and lock-free data structure that implements a ring buffer. It provides methods for pushing and popping elements, as well as getting the length and checking if the buffer is full or empty.
+
+### Create
+
+-   `New`: Create a new ring buffer
 
 ### Methods
 

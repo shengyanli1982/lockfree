@@ -165,6 +165,29 @@ func TestLockFreeRingBuffer_LessThanCapacity(t *testing.T) {
 	assert.Equal(t, int64(0), r.Count(), "Incorrect ring buffer length. Expected 0, got %d", r.Count())
 }
 
+func TestLockFreeRingBuffer_LargeThanCapacity(t *testing.T) {
+	r := New(5) // Replace with your desired capacity
+
+	for i := 0; i < 10; i++ {
+		if result := r.Push(i); !result {
+			assert.False(t, result, "Failed to push value: %d", i)
+		}
+	}
+
+	// Verify the ring buffer length
+	assert.Equal(t, int64(5), r.Count(), "Incorrect ring buffer length. Expected 5, got %d", r.Count())
+
+	// Verify the elements in the ring buffer
+	for i := 0; i < 5; i++ {
+		value, ok := r.Pop()
+		assert.True(t, ok, "Failed to pop value")
+		assert.Equal(t, i, value, "Incorrect value in the ring buffer. Expected %d, got %d", i, value)
+	}
+
+	// Verify the ring buffer length
+	assert.Equal(t, int64(0), r.Count(), "Incorrect ring buffer length. Expected 0, got %d", r.Count())
+}
+
 func TestLockFreeRingBuffer_EmptyPop(t *testing.T) {
 	r := New(5) // Replace with your desired capacity
 
